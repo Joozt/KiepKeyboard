@@ -3,7 +3,6 @@ Fullscreen typing Android app for hardware USB keyboard. Designed as lightweight
 
 ![Screenshot](images/Screenshot.jpg)
 
-![](images/google-play-badge.png)
 [![Get it on Google Play](images/google-play-badge.png)](https://play.google.com/store/apps/details?id=nl.joozt.kiep.keyboard)
 
 ## Hardware
