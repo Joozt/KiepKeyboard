@@ -1,4 +1,4 @@
-# KiepAndroidKeyboard
+# KiepKeyboard
 Fullscreen typing Android app for hardware USB keyboard. Designed as lightweight portable communication setup for disabled people.
 
 ![Screenshot](images/Screenshot.jpg)
