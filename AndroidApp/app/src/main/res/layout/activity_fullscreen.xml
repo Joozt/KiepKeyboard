@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context=".FullscreenActivity">
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="20dp"
+        android:background="@android:color/transparent"
+        android:ems="10"
+        android:gravity="center"
+        android:inputType="textCapSentences|textMultiLine"
+        android:text="KiepKeyboard"
+        android:textColor="#FFFFFF"
+        android:textSize="100dp" />
+</FrameLayout>
