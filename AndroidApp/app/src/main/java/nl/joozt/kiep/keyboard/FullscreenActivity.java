@@ -24,6 +24,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
         editText = findViewById(R.id.editText);
         editText.setShowSoftInputOnFocus(false);
+
+        new YesNo(this, editText);
     }
 
     @Override

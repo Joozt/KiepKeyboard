@@ -11,12 +11,12 @@
         android:id="@+id/editText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="20dp"
         android:background="@android:color/transparent"
         android:ems="10"
         android:gravity="center"
         android:inputType="textCapSentences|textMultiLine"
+        android:padding="20dp"
         android:text="KiepKeyboard"
         android:textColor="#FFFFFF"
-        android:textSize="100dp" />
+        android:textSize="100sp" />
 </FrameLayout>
