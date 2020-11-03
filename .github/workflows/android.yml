@@ -18,4 +18,5 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Gradle
-      run: ./AndroidApp/gradlew build
+      working-directory: AndroidApp
+      run: ./gradlew build
