@@ -13,11 +13,13 @@ import androidx.appcompat.app.AppCompatActivity;
 public class FullscreenActivity extends AppCompatActivity {
     public static final String KIEP_KEYBOARD = "KiepKeyboard";
     private EditText editText;
+    private TTS tts;
 
     @Override
     @SuppressLint("SourceLockedOrientationActivity")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // Set the content full screen & landscape
         setContentView(R.layout.activity_fullscreen);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -30,7 +32,7 @@ public class FullscreenActivity extends AppCompatActivity {
         new YesNo(this, editText);
 
         // Define instances of the TTS functionality
-        new TTS(this, editText);
+        tts = new TTS(this, editText);
     }
 
     @Override
@@ -47,25 +49,38 @@ public class FullscreenActivity extends AppCompatActivity {
         // Get preferences with previously stored information
         SharedPreferences settings = getSharedPreferences(KIEP_KEYBOARD, Context.MODE_PRIVATE);
         String text = settings.getString("Text", KIEP_KEYBOARD);
+
         // Set the text back in the editor
         editText.setText(text);
+
         if (text.equals(KIEP_KEYBOARD)) {
+
             // If default text, select all and overwrite when start typing
             editText.selectAll();
         } else {
+
             // Set the cursor to the end
             editText.setSelection(editText.getText().length());
         }
     }
 
     @Override
+    @SuppressLint("ApplySharedPref")
     protected void onPause() {
         super.onPause();
+
         // Get settings and define preferences to store the text when minimizing / onPause
         SharedPreferences settings = getSharedPreferences(KIEP_KEYBOARD, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
+
         // Store the result in the preferences
         editor.putString("Text", editText.getText().toString());
         editor.commit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        tts.destroy();
+        super.onDestroy();
     }
 }

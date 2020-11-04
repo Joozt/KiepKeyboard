@@ -1,18 +1,17 @@
 package nl.joozt.kiep.keyboard;
 
+import android.content.Context;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
-import android.content.Context;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
-
-import java.util.HashMap;
-import java.util.Locale;
 import android.util.Log;
 import android.widget.EditText;
 
-public class TTS implements TextWatcher{
+import java.util.Locale;
+
+public class TTS implements TextWatcher {
     // Parameters used in the function
     // - character to select speak
     public static final String CHAR_SPEAK = "\\";
@@ -21,18 +20,12 @@ public class TTS implements TextWatcher{
     private TextToSpeech textToSpeech;
     private final EditText editText;
 
-    // HashMap is included to use alternative pronunciation of words / characters
-    private HashMap<String, String> alternativePronunciations = new HashMap<String, String>();
-
     public TTS(Context context, EditText editText) {
         // Define variables to be used
         this.editText = editText;
 
         // Add a listener to the text
         this.editText.addTextChangedListener(this);
-
-        // Alternative pronunciations list
-        alternativePronunciations.put("Y", "ei");
 
         // Initialize TextToSpeech with the proper language setting (based on Locale)
         textToSpeech = new TextToSpeech(context,
@@ -65,21 +58,12 @@ public class TTS implements TextWatcher{
             return;
         }
 
-        // Check if text is equal to alternative pronunciation
-        // OI: to be checked for the complete string / list of words
-        String alternativePronunciation = alternativePronunciations.get(text);
-        if (alternativePronunciation != null) {
-            text = alternativePronunciation;
-        }
-
         // Add message to logging
         Log.i(TAG, "Speak: " + text);
 
         // Speak text
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
-
-    public void stop() {}
 
     public void destroy() {
         if (textToSpeech != null) {
@@ -107,17 +91,17 @@ public class TTS implements TextWatcher{
             complete_text = complete_text.trim();
 
             // Remove the last character if it is dot, ! or ?
-            if (complete_text.charAt(complete_text.length()-1) == '.' || complete_text.charAt(complete_text.length()-1) == '!' || complete_text.charAt(complete_text.length()-1) == '?')
-                complete_text = complete_text.substring(0, complete_text.length()-1);
+            if (complete_text.charAt(complete_text.length() - 1) == '.' || complete_text.charAt(complete_text.length() - 1) == '!' || complete_text.charAt(complete_text.length() - 1) == '?')
+                complete_text = complete_text.substring(0, complete_text.length() - 1);
 
             // Search for line ending characters, like dot, ! or ?
-            String last_sentence_dot  = complete_text.substring(complete_text.lastIndexOf(".")+1);
-            String last_sentence_expl = complete_text.substring(complete_text.lastIndexOf("!")+1);
-            String last_sentence_ques = complete_text.substring(complete_text.lastIndexOf("?")+1);
+            String last_sentence_dot = complete_text.substring(complete_text.lastIndexOf(".") + 1);
+            String last_sentence_expl = complete_text.substring(complete_text.lastIndexOf("!") + 1);
+            String last_sentence_ques = complete_text.substring(complete_text.lastIndexOf("?") + 1);
 
             // Check for the shortest string length and play that case
-            int length_tot  = complete_text.length();
-            int length_dot  = last_sentence_dot.length();
+            int length_tot = complete_text.length();
+            int length_dot = last_sentence_dot.length();
             int length_expl = last_sentence_expl.length();
             int length_ques = last_sentence_ques.length();
 
