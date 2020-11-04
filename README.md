@@ -1,6 +1,6 @@
 # KiepKeyboard
-
-![Android CI](https://github.com/Joozt/KiepKeyboard/workflows/Android%20CI/badge.svg)
+![Build debug APK](https://github.com/Joozt/KiepKeyboard/workflows/Build%20debug%20APK/badge.svg?branch=master)
+![Publish release to internal testers](https://github.com/Joozt/KiepKeyboard/workflows/Publish%20release%20to%20internal%20testers/badge.svg?branch=master)
 
 Fullscreen typing Android app for hardware USB keyboard. Designed as lightweight portable communication setup for disabled people.
 
