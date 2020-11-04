@@ -17,6 +17,7 @@ jobs:
         working-directory: AndroidApp
         run: bash ./gradlew bundleRelease
       - name: Sign release APK
+        id: sign-release
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: AndroidApp/app/build/outputs/bundle/release
@@ -28,4 +29,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: app-release
-          path: ${{ steps.sign-release-apk.outputs.signedReleaseFile }}
+          path: ${{ steps.sign-release.outputs.signedReleaseFile }}
