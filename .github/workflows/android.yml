@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ master ]
 
-defaults:
-  run:
-    working-directory: ./AndroidApp
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,9 +16,10 @@ jobs:
       with:
         java-version: 1.8
     - name: Build debug APK
+      working-directory: AndroidApp
       run: bash ./gradlew assembleDebug --stacktrace
     - name: Archive APK
       uses: actions/upload-artifact@v2
       with:
         name: app
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: AndroidApp/app/build/outputs/apk/debug/app-debug.apk
