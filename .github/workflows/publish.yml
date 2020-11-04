@@ -13,6 +13,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+      - name: Provide Firebase config
+        env:
+          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+        run: echo $FIREBASE_CONFIG > ./AndroidApp/app/google-services.json
       - name: Build release APK
         working-directory: AndroidApp
         run: bash ./gradlew bundleRelease

@@ -28,11 +28,15 @@ public class FullscreenActivity extends AppCompatActivity {
         editText = findViewById(R.id.editText);
         editText.setShowSoftInputOnFocus(false);
 
+        Analytics analytics = new Analytics(this);
+
         // Define instances on the yes/no functionality
-        new YesNo(this, editText);
+        YesNo yesNo = new YesNo(this, editText);
+        yesNo.setAnalytics(analytics);
 
         // Define instances of the TTS functionality
         tts = new TTS(this, editText);
+        tts.setAnalytics(analytics);
     }
 
     @Override
