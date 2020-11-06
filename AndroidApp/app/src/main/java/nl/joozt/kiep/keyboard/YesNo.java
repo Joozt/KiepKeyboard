@@ -14,6 +14,7 @@ public class YesNo {
     private final SoundPool soundPool;
     private final int noSoundId;
     private final int yesSoundId;
+    private Analytics analytics = null;
 
     public YesNo(Context context, EditText editText) {
         this.context = context;
@@ -28,6 +29,9 @@ public class YesNo {
             public void onKeyPress() {
                 playSound(noSoundId);
                 highlightBackground(Color.parseColor("#be0000"));
+                if (analytics != null) {
+                    analytics.logNo();
+                }
             }
         });
 
@@ -36,8 +40,15 @@ public class YesNo {
             public void onKeyPress() {
                 playSound(yesSoundId);
                 highlightBackground(Color.parseColor("#009800"));
+                if (analytics != null) {
+                    analytics.logYes();
+                }
             }
         });
+    }
+
+    public void setAnalytics(Analytics analytics) {
+        this.analytics = analytics;
     }
 
     private int loadWav(String wavName) {

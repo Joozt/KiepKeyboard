@@ -15,6 +15,7 @@ public class TTS {
     private static final String TAG = TTS.class.getSimpleName();
 
     private TextToSpeech textToSpeech;
+    private Analytics analytics = null;
 
     public TTS(Context context, final EditText editText) {
 
@@ -49,6 +50,10 @@ public class TTS {
         });
     }
 
+    public void setAnalytics(Analytics analytics) {
+        this.analytics = analytics;
+    }
+
     // Speak functionality
     public void speak(String text) {
         // If no argument, return
@@ -58,6 +63,10 @@ public class TTS {
 
         // Add message to logging
         Log.i(TAG, "Speak: " + text);
+
+        if (analytics != null) {
+            analytics.logTts(text.split("\\s+").length);
+        }
 
         // Speak text
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
