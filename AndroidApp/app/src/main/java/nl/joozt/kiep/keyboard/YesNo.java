@@ -67,7 +67,7 @@ public class YesNo {
         animator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                ObjectAnimator.ofArgb(editText, "backgroundColor", highlightColor, Color.BLACK)
+                ObjectAnimator.ofArgb(editText, "backgroundColor", highlightColor, Color.TRANSPARENT)
                         .setDuration(250)
                         .start();
             }

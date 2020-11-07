@@ -7,6 +7,8 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -37,6 +39,10 @@ public class FullscreenActivity extends AppCompatActivity {
         // Define instances of the TTS functionality
         tts = new TTS(this, editText);
         tts.setAnalytics(analytics);
+
+        FrameLayout frameLayout = findViewById(R.id.content);
+        ProgressBar progressBar = findViewById(R.id.progressBar);
+        new BatteryStatus(this, progressBar, frameLayout);
     }
 
     @Override
