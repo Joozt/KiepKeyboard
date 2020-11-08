@@ -1,6 +1,14 @@
 <resources>
-    <string name="app_name">KiepKeyboard</string>
+    <string name="app_name" translatable="false">KiepKeyboard</string>
+    <string name="title_activity_settings">KiepKeyboard Settings</string>
 
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="setting_yes_no">Yes/no</string>
+    <string name="setting_enable_yes_no">Enable yes/no</string>
+    <string name="setting_enable_yes_no_description">Enable speaking yes/no and highlight the screen</string>
+    <string name="setting_yes_key">Yes hotkey</string>
+    <string name="setting_yes_key_description">Use the %s key to press to speak the "yes" sound and highlight the screen in green</string>
+    <string name="setting_no_key">No hotkey</string>
+    <string name="setting_no_key_description">Use the %s key to press to speak the "no" sound and highlight the screen in red</string>
+    <string name="setting_enable_hightlight">Enable highlight</string>
+    <string name="setting_enable_hightlight_description">Enable highlighting the screen on yes/no</string>
 </resources>

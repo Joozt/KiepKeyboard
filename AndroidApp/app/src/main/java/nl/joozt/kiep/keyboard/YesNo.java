@@ -3,10 +3,13 @@ package nl.joozt.kiep.keyboard;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.SoundPool;
 import android.widget.EditText;
+
+import androidx.preference.PreferenceManager;
 
 public class YesNo {
     private final Context context;
@@ -24,22 +27,35 @@ public class YesNo {
         noSoundId = loadWav("no");
         yesSoundId = loadWav("yes");
 
-        KeyPressListener.listen(editText, "[", new KeyPressListener.OnKeyPressListener() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        final boolean highlightEnabled = preferences.getBoolean(SettingsActivity.ENABLE_HIGHLIGHT, SettingsActivity.ENABLE_HIGHLIGHT_DEFAULT);
+        boolean yesNoEnabled = preferences.getBoolean(SettingsActivity.ENABLE_YES_NO, SettingsActivity.ENABLE_YES_NO_DEFAULT);
+        if (!yesNoEnabled) {
+            return;
+        }
+
+        String noKey = preferences.getString(SettingsActivity.NO_KEY, SettingsActivity.NO_KEY_DEFAULT);
+        KeyPressListener.listen(editText, noKey, new KeyPressListener.OnKeyPressListener() {
             @Override
             public void onKeyPress() {
                 playSound(noSoundId);
-                highlightBackground(Color.parseColor("#be0000"));
+                if (highlightEnabled) {
+                    highlightBackground(Color.parseColor("#be0000"));
+                }
                 if (analytics != null) {
                     analytics.logNo();
                 }
             }
         });
 
-        KeyPressListener.listen(editText, "]", new KeyPressListener.OnKeyPressListener() {
+        String yesKey = preferences.getString(SettingsActivity.YES_KEY, SettingsActivity.YES_KEY_DEFAULT);
+        KeyPressListener.listen(editText, yesKey, new KeyPressListener.OnKeyPressListener() {
             @Override
             public void onKeyPress() {
                 playSound(yesSoundId);
-                highlightBackground(Color.parseColor("#009800"));
+                if (highlightEnabled) {
+                    highlightBackground(Color.parseColor("#009800"));
+                }
                 if (analytics != null) {
                     analytics.logYes();
                 }

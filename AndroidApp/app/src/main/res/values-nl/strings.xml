@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_activity_settings">KiepKeyboard Instellingen</string>
+
+    <string name="setting_yes_no">Ja/nee</string>
+    <string name="setting_enable_yes_no">Ja/nee inschakelen</string>
+    <string name="setting_enable_yes_no_description">Ja/nee laten uitspreken en het scherm laten oplichten</string>
+    <string name="setting_yes_key">Ja sneltoets</string>
+    <string name="setting_yes_key_description">Gebruik de %s toets om \"ja\" te laten uitspreken en het scherm groen te laten oplichten</string>
+    <string name="setting_no_key">Nee sneltoets</string>
+    <string name="setting_no_key_description">Gebruik de %s toets om \"nee\" te laten uitspreken en het scherm rood te laten oplichten</string>
+    <string name="setting_enable_hightlight">Scherm oplichten</string>
+    <string name="setting_enable_hightlight_description">Laat het scherm oplichten tijdens ja/nee</string>
+</resources>

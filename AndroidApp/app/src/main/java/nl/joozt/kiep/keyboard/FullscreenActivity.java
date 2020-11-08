@@ -11,8 +11,9 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
-public class FullscreenActivity extends AppCompatActivity {
+public class FullscreenActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final String KIEP_KEYBOARD = "KiepKeyboard";
     private EditText editText;
     private TTS tts;
@@ -21,6 +22,7 @@ public class FullscreenActivity extends AppCompatActivity {
     @SuppressLint("SourceLockedOrientationActivity")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 
         // Set the content full screen & landscape
         setContentView(R.layout.activity_fullscreen);
@@ -32,7 +34,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
         Analytics analytics = new Analytics(this);
 
-        // Define instances on the yes/no functionality
+        // Define instances of the yes/no functionality
         YesNo yesNo = new YesNo(this, editText);
         yesNo.setAnalytics(analytics);
 
@@ -43,6 +45,11 @@ public class FullscreenActivity extends AppCompatActivity {
         FrameLayout frameLayout = findViewById(R.id.content);
         ProgressBar progressBar = findViewById(R.id.progressBar);
         new BatteryStatus(this, progressBar, frameLayout);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        this.recreate(); // Reload everything when one of the settings has changed
     }
 
     @Override
