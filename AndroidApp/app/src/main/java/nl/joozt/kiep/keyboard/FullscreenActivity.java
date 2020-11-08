@@ -17,6 +17,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     public static final String KIEP_KEYBOARD = "KiepKeyboard";
     private EditText editText;
     private TTS tts;
+    private UpdateCheck updateCheck;
 
     @Override
     @SuppressLint("SourceLockedOrientationActivity")
@@ -45,6 +46,8 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         FrameLayout frameLayout = findViewById(R.id.content);
         ProgressBar progressBar = findViewById(R.id.progressBar);
         new BatteryStatus(this, progressBar, frameLayout);
+
+        updateCheck = new UpdateCheck(this);
     }
 
     @Override
@@ -79,6 +82,8 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
             // Set the cursor to the end
             editText.setSelection(editText.getText().length());
         }
+
+        updateCheck.checkForUpdate();
     }
 
     @Override
