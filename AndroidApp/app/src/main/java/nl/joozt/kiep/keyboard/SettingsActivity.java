@@ -12,6 +12,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
+import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreferenceCompat;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -25,6 +26,12 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String NO_KEY_DEFAULT = "[";
     public static final String YES_KEY = "yes_key";
     public static final String YES_KEY_DEFAULT = "]";
+    public static final String BATTERY_STATUS = "battery_status";
+    public static final boolean BATTERY_STATUS_DEFAULT = true;
+    public static final String LOWBAT_WARNING = "lowbat_warning";
+    public static final boolean LOWBAT_WARNING_DEFAULT = true;
+    public static final String LOWBAT_LEVEL = "lowbat_level";
+    public static final int LOWBAT_LEVEL_DEFAULT = 10;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,6 +51,7 @@ public class SettingsActivity extends AppCompatActivity {
             PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(context);
             addPlayStoreListing(context, screen);
             addYesNoCategory(context, screen);
+            addBatteryStatusCategory(context, screen);
             setPreferenceScreen(screen);
 
             screen.findPreference(NO_KEY).setDependency(ENABLE_YES_NO);
@@ -56,16 +64,13 @@ public class SettingsActivity extends AppCompatActivity {
             openPlayStoreListing.setKey(OPEN_PLAY_STORE_LISTING);
             openPlayStoreListing.setTitle(R.string.setting_open_play_store_listing);
             openPlayStoreListing.setSummary(R.string.setting_open_play_store_listing_description);
-            openPlayStoreListing.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    try {
-                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + context.getPackageName())));
-                    } catch (android.content.ActivityNotFoundException ignored) {
-                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + context.getPackageName())));
-                    }
-                    return true;
+            openPlayStoreListing.setOnPreferenceClickListener(preference -> {
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + context.getPackageName())));
+                } catch (android.content.ActivityNotFoundException ignored) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + context.getPackageName())));
                 }
+                return true;
             });
             screen.addPreference(openPlayStoreListing);
         }
@@ -107,6 +112,37 @@ public class SettingsActivity extends AppCompatActivity {
             enableHighlight.setSummary(R.string.setting_enable_hightlight_description);
             enableHighlight.setDefaultValue(ENABLE_HIGHLIGHT_DEFAULT);
             category.addPreference(enableHighlight);
+        }
+
+        private void addBatteryStatusCategory(Context context, PreferenceScreen screen) {
+            PreferenceCategory category = new PreferenceCategory(context);
+            category.setKey("battery_status");
+            category.setTitle(R.string.setting_battery_status);
+            screen.addPreference(category);
+
+            SwitchPreferenceCompat batteryStatus = new SwitchPreferenceCompat(context);
+            batteryStatus.setKey(BATTERY_STATUS);
+            batteryStatus.setTitle(R.string.setting_show_battery_status);
+            batteryStatus.setSummary(R.string.setting_show_battery_status_description);
+            batteryStatus.setDefaultValue(BATTERY_STATUS_DEFAULT);
+            category.addPreference(batteryStatus);
+
+            SwitchPreferenceCompat lowBatWarning = new SwitchPreferenceCompat(context);
+            lowBatWarning.setKey(LOWBAT_WARNING);
+            lowBatWarning.setTitle(R.string.setting_battery_status_lowbat);
+            lowBatWarning.setSummary(R.string.setting_battery_status_lowbat_description);
+            lowBatWarning.setDefaultValue(LOWBAT_WARNING_DEFAULT);
+            category.addPreference(lowBatWarning);
+
+            SeekBarPreference lowBatLevel = new SeekBarPreference(context);
+            lowBatLevel.setKey(LOWBAT_LEVEL);
+            lowBatLevel.setTitle(R.string.settings_battery_status_lowbat_level);
+            lowBatLevel.setDefaultValue(LOWBAT_LEVEL_DEFAULT);
+            lowBatLevel.setSeekBarIncrement(5);
+            lowBatLevel.setMin(5);
+            lowBatLevel.setMax(95);
+            lowBatLevel.setShowSeekBarValue(true);
+            category.addPreference(lowBatLevel);
         }
     }
 }

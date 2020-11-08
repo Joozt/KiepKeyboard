@@ -13,4 +13,10 @@
     <string name="setting_no_key_description">Gebruik de %s toets om \"nee\" te laten uitspreken en het scherm rood te laten oplichten</string>
     <string name="setting_enable_hightlight">Scherm oplichten</string>
     <string name="setting_enable_hightlight_description">Laat het scherm oplichten tijdens ja/nee</string>
+    <string name="setting_battery_status">Batterijstatus</string>
+    <string name="setting_show_battery_status">Toon batterijstatus</string>
+    <string name="setting_show_battery_status_description">Toon batterijstatus-balk onderaan het scherm</string>
+    <string name="setting_battery_status_lowbat">Aangeven indien batterij bijna leeg</string>
+    <string name="setting_battery_status_lowbat_description">Achtergrond aanpassen indien batterij bijna leeg</string>
+    <string name="settings_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
 </resources>
