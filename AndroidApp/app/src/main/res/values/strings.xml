@@ -2,6 +2,8 @@
     <string name="app_name" translatable="false">KiepKeyboard</string>
     <string name="title_activity_settings">KiepKeyboard Settings</string>
 
+    <string name="setting_open_play_store_listing">Open Play Store listing</string>
+    <string name="setting_open_play_store_listing_description">Open the page of this app in the Google Play Store</string>
     <string name="setting_yes_no">Yes/no</string>
     <string name="setting_enable_yes_no">Enable yes/no</string>
     <string name="setting_enable_yes_no_description">Enable speaking yes/no and highlight the screen</string>

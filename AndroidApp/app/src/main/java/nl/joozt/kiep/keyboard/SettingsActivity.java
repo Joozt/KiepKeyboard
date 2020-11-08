@@ -1,11 +1,14 @@
 package nl.joozt.kiep.keyboard;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.ListPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
@@ -13,6 +16,7 @@ import androidx.preference.SwitchPreferenceCompat;
 
 public class SettingsActivity extends AppCompatActivity {
     private static final String[] functionKeys = {"[", "]", "\\", ";", "'", "/", "-", "=", "`", "{", "}", "|", ":", "\"", "<", ">", "~"};
+    public static final String OPEN_PLAY_STORE_LISTING = "open_play_store_listing";
     public static final String ENABLE_YES_NO = "enable_yes_no";
     public static final boolean ENABLE_YES_NO_DEFAULT = true;
     public static final String ENABLE_HIGHLIGHT = "enable_highlight";
@@ -38,12 +42,32 @@ public class SettingsActivity extends AppCompatActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             Context context = getPreferenceManager().getContext();
             PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(context);
+            addPlayStoreListing(context, screen);
             addYesNoCategory(context, screen);
             setPreferenceScreen(screen);
 
             screen.findPreference(NO_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(YES_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(ENABLE_HIGHLIGHT).setDependency(ENABLE_YES_NO);
+        }
+
+        private void addPlayStoreListing(final Context context, PreferenceScreen screen) {
+            Preference openPlayStoreListing = new Preference(context);
+            openPlayStoreListing.setKey(OPEN_PLAY_STORE_LISTING);
+            openPlayStoreListing.setTitle(R.string.setting_open_play_store_listing);
+            openPlayStoreListing.setSummary(R.string.setting_open_play_store_listing_description);
+            openPlayStoreListing.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + context.getPackageName())));
+                    } catch (android.content.ActivityNotFoundException ignored) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + context.getPackageName())));
+                    }
+                    return true;
+                }
+            });
+            screen.addPreference(openPlayStoreListing);
         }
 
         private void addYesNoCategory(Context context, PreferenceScreen screen) {
