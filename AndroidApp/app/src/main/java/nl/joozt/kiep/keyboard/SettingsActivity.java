@@ -7,6 +7,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
@@ -32,6 +33,9 @@ public class SettingsActivity extends AppCompatActivity {
     public static final boolean LOWBAT_WARNING_DEFAULT = true;
     public static final String LOWBAT_LEVEL = "lowbat_level";
     public static final int LOWBAT_LEVEL_DEFAULT = 10;
+    public static final String DROPBOX_OPEN_OAUTH = "dropbox_open_oauth";
+    public static final String DROPBOX_OAUTH_KEY = "dropbox_oauth";
+    public static final String DROPBOX_OAUTH_KEY_DEFAULT = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,6 +56,7 @@ public class SettingsActivity extends AppCompatActivity {
             addPlayStoreListing(context, screen);
             addYesNoCategory(context, screen);
             addBatteryStatusCategory(context, screen);
+            addDropboxSyncCategory(context,screen);
             setPreferenceScreen(screen);
 
             screen.findPreference(NO_KEY).setDependency(ENABLE_YES_NO);
@@ -143,6 +148,31 @@ public class SettingsActivity extends AppCompatActivity {
             lowBatLevel.setMax(95);
             lowBatLevel.setShowSeekBarValue(true);
             category.addPreference(lowBatLevel);
+        }
+        private void addDropboxSyncCategory(Context context, PreferenceScreen screen) {
+            PreferenceCategory category = new PreferenceCategory(context);
+            category.setKey("dropbox_sync");
+            category.setTitle("Dropbox synchronization");
+            screen.addPreference(category);
+
+            Preference openDropboxOauth = new Preference(context);
+            openDropboxOauth.setKey(DROPBOX_OPEN_OAUTH);
+            openDropboxOauth.setTitle("Perform Dropbox Authentication");
+            openDropboxOauth.setSummary("Generate oauth2 authentication key with Dropbox");
+            openDropboxOauth.setOnPreferenceClickListener(preference ->
+            {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.dropbox.com/oauth2/authorize?client_id=x3tgfp5v2r3zix2&response_type=code")));
+                return true;
+            });
+            screen.addPreference(openDropboxOauth);
+
+            EditTextPreference editTextPreference =  new EditTextPreference(context);
+            editTextPreference.setKey(DROPBOX_OAUTH_KEY);
+            editTextPreference.setTitle("Store generated OAUTH key Dropbox");
+            editTextPreference.setSummary("Save the OAUTH key generated after pushing the button above");
+            editTextPreference.setDefaultValue(DROPBOX_OAUTH_KEY_DEFAULT);
+            category.addPreference((editTextPreference));
+
         }
     }
 }

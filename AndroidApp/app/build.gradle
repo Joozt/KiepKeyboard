@@ -66,4 +66,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics'
     implementation 'com.google.android.gms:play-services-basement:17.5.0'
     implementation 'com.google.firebase:firebase-perf'
+    implementation 'com.dropbox.core:dropbox-core-sdk:3.1.5'
 }
