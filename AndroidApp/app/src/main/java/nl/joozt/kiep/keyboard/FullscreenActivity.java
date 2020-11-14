@@ -13,11 +13,14 @@ import android.widget.ProgressBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
+import java.io.IOException;
+
 public class FullscreenActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final String KIEP_KEYBOARD = "KiepKeyboard";
     private EditText editText;
     private TTS tts;
     private UpdateCheck updateCheck;
+    private Dropbox dropbox;
 
     @Override
     @SuppressLint("SourceLockedOrientationActivity")
@@ -48,6 +51,9 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         new BatteryStatus(this, progressBar, frameLayout);
 
         updateCheck = new UpdateCheck(this);
+
+        // Define instance of Dropbox
+        dropbox = new Dropbox(this);
     }
 
     @Override

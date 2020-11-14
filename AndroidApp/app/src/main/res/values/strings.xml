@@ -2,6 +2,9 @@
     <string name="app_name" translatable="false">KiepKeyboard</string>
     <string name="title_activity_settings">KiepKeyboard Settings</string>
 
+    <string name="update_ready">An update is ready to be installed</string>
+    <string name="update_restart">RESTART</string>
+
     <string name="setting_open_play_store_listing">Open Play Store listing</string>
     <string name="setting_open_play_store_listing_description">Open the page of this app in the Google Play Store</string>
     <string name="setting_yes_no">Yes/no</string>
@@ -18,7 +21,10 @@
     <string name="setting_show_battery_status_description">Show battery status bar at the bottom of the screen</string>
     <string name="setting_battery_status_lowbat">Enable low battery indication</string>
     <string name="setting_battery_status_lowbat_description">Change background color on low battery</string>
-    <string name="settings_battery_status_lowbat_level">Battery level for low battery warning</string>
-    <string name="update_ready">An update is ready to be installed</string>
-    <string name="update_restart">RESTART</string>
+    <string name="setting_battery_status_lowbat_level">Battery level for low battery warning</string>
+    <string name="setting_dropbox">Dropbox synchronization</string>
+    <string name="setting_dropbox_perform_auth">Perform authentication</string>
+    <string name="setting_dropbox_perform_auth_description">Generate authentication key with the Dropbox website</string>
+    <string name="setting_dropbox_key">Authentication key</string>
+    <string name="setting_dropbox_key_description">Paste the generated key after performing authentication</string>
 </resources>
