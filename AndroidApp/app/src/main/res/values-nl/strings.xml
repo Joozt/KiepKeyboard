@@ -19,4 +19,6 @@
     <string name="setting_battery_status_lowbat">Aangeven indien batterij bijna leeg</string>
     <string name="setting_battery_status_lowbat_description">Achtergrond aanpassen indien batterij bijna leeg</string>
     <string name="settings_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
+    <string name="update_ready">Update is gereed om te installeren</string>
+    <string name="update_restart">OPNIEUW STARTEN</string>
 </resources>
