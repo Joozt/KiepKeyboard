@@ -7,11 +7,11 @@ import android.os.AsyncTask;
 import androidx.preference.PreferenceManager;
 
 import com.dropbox.core.DbxException;
-import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.DbxRequestConfig;
+import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
-import com.dropbox.core.v2.users.FullAccount;
 import com.dropbox.core.v2.files.ListFolderResult;
+import com.dropbox.core.v2.users.FullAccount;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,42 +21,49 @@ import java.io.OutputStream;
 
 public class Dropbox {
     // Define default folder to store data & delay to check updates (OI: make config option)
-    private static String TXT_FOLDER = "txt_files";
-    private static Integer UPDATE_DELAY = 5*60*1000; // in [ms]
+    private static final String TXT_FOLDER = "txt_files";
+    private static final Integer UPDATE_DELAY = 5 * 60 * 1000; // in [ms]
 
-    private static class DropboxTask extends AsyncTask<Context, Void, Void>
-    {
+    private static class DropboxTask extends AsyncTask<Context, Void, Void> {
         @Override
-        protected Void doInBackground(Context ... context) {
+        protected Void doInBackground(Context... context) {
             // Update variables
-            String LOCAL_FOLDER = context[0].getFilesDir().toString();
+            String localFolder = context[0].getFilesDir().toString();
 
             // Obtain access code from preferences
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context[0]);
-            String ACCESS_TOKEN_OAUTH = preferences.getString(SettingsActivity.DROPBOX_OAUTH_KEY, SettingsActivity.DROPBOX_OAUTH_KEY_DEFAULT);
+            String accessTokenOauth = preferences.getString(SettingsActivity.DROPBOX_OAUTH_KEY, "");
 
             // Create Dropbox client connection
             DbxRequestConfig config = DbxRequestConfig.newBuilder("dropbox/KiepKeyboard").build();
-            DbxClientV2 client = new DbxClientV2(config, ACCESS_TOKEN_OAUTH);
+            DbxClientV2 client = new DbxClientV2(config, accessTokenOauth);
 
             // Check if connection is working and whether account can be read properly
-            try { FullAccount account = client.users().getCurrentAccount(); }
-            catch (DbxException e) { e.printStackTrace();  return null;}
+            try {
+                FullAccount account = client.users().getCurrentAccount();
+            } catch (DbxException e) {
+                e.printStackTrace();
+                return null;
+            }
 
             // Check if the directory with text files already exists on Dropbox
-            try { client.files().listFolder("/"+TXT_FOLDER); }
-            catch (DbxException e)
-            {
+            try {
+                client.files().listFolder("/" + TXT_FOLDER);
+            } catch (DbxException e) {
                 // No folder found; try to create it
-                try { client.files().createFolderV2("/"+TXT_FOLDER); }
-                catch (DbxException f) { f.printStackTrace(); }
+                try {
+                    client.files().createFolderV2("/" + TXT_FOLDER);
+                } catch (DbxException f) {
+                    f.printStackTrace();
+                }
             }
 
             // Check if the directory local on the device already exists
-            File local_folder = new File(LOCAL_FOLDER+"/"+TXT_FOLDER);
+            File local_folder = new File(localFolder + "/" + TXT_FOLDER);
             // Create directory if it does not exist yet
-            if (!local_folder.exists()) { local_folder.mkdir(); }
-            else if (!local_folder.isDirectory()) {
+            if (!local_folder.exists()) {
+                local_folder.mkdir();
+            } else if (!local_folder.isDirectory()) {
                 // Display an error that it is not a directory OI
             }
 

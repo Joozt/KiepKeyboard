@@ -18,7 +18,12 @@
     <string name="setting_show_battery_status_description">Toon batterijstatus-balk onderaan het scherm</string>
     <string name="setting_battery_status_lowbat">Aangeven indien batterij bijna leeg</string>
     <string name="setting_battery_status_lowbat_description">Achtergrond aanpassen indien batterij bijna leeg</string>
-    <string name="settings_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
+    <string name="setting_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
     <string name="update_ready">Update is gereed om te installeren</string>
     <string name="update_restart">OPNIEUW STARTEN</string>
+    <string name="setting_dropbox">Dropbox synchronisatie</string>
+    <string name="setting_dropbox_perform_auth">Toegang verkrijgen</string>
+    <string name="setting_dropbox_perform_auth_description">Genereer een toegangssleutel via de Dropbox website</string>
+    <string name="setting_dropbox_key">Toegangssleutel</string>
+    <string name="setting_dropbox_key_description">Plak de gegenereerde toegangssleutel na het verkrijgen</string>
 </resources>
