@@ -19,7 +19,7 @@ public class YesNo {
     private final int yesSoundId;
     private Analytics analytics = null;
 
-    public YesNo(Context context, EditText editText) {
+    public YesNo(Context context, GlobalKeyPressListener keyPressListener, EditText editText) {
         this.context = context;
         this.editText = editText;
 
@@ -35,30 +35,24 @@ public class YesNo {
         }
 
         String noKey = preferences.getString(SettingsActivity.NO_KEY, SettingsActivity.NO_KEY_DEFAULT);
-        KeyPressListener.listen(editText, noKey, new KeyPressListener.OnKeyPressListener() {
-            @Override
-            public void onKeyPress() {
-                playSound(noSoundId);
-                if (highlightEnabled) {
-                    highlightBackground(Color.parseColor("#be0000"));
-                }
-                if (analytics != null) {
-                    analytics.logNo();
-                }
+        keyPressListener.addListener(noKey, () -> {
+            playSound(noSoundId);
+            if (highlightEnabled) {
+                highlightBackground(Color.parseColor("#be0000"));
+            }
+            if (analytics != null) {
+                analytics.logNo();
             }
         });
 
         String yesKey = preferences.getString(SettingsActivity.YES_KEY, SettingsActivity.YES_KEY_DEFAULT);
-        KeyPressListener.listen(editText, yesKey, new KeyPressListener.OnKeyPressListener() {
-            @Override
-            public void onKeyPress() {
-                playSound(yesSoundId);
-                if (highlightEnabled) {
-                    highlightBackground(Color.parseColor("#009800"));
-                }
-                if (analytics != null) {
-                    analytics.logYes();
-                }
+        keyPressListener.addListener(yesKey, () -> {
+            playSound(yesSoundId);
+            if (highlightEnabled) {
+                highlightBackground(Color.parseColor("#009800"));
+            }
+            if (analytics != null) {
+                analytics.logYes();
             }
         });
     }

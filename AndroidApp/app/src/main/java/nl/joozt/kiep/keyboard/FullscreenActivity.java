@@ -34,13 +34,14 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         editText.setShowSoftInputOnFocus(false);
 
         Analytics analytics = new Analytics(this);
+        GlobalKeyPressListener keyPressListener = new GlobalKeyPressListener(editText);
 
         // Define instances of the yes/no functionality
-        YesNo yesNo = new YesNo(this, editText);
+        YesNo yesNo = new YesNo(this, keyPressListener, editText);
         yesNo.setAnalytics(analytics);
 
         // Define instances of the TTS functionality
-        tts = new TTS(this, editText);
+        tts = new TTS(this, keyPressListener, editText);
         tts.setAnalytics(analytics);
 
         FrameLayout frameLayout = findViewById(R.id.content);

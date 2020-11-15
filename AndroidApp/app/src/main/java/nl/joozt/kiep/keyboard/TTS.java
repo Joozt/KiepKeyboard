@@ -17,7 +17,7 @@ public class TTS {
     private TextToSpeech textToSpeech;
     private Analytics analytics = null;
 
-    public TTS(Context context, final EditText editText) {
+    public TTS(Context context, GlobalKeyPressListener keyPressListener, final EditText editText) {
 
         // Initialize TextToSpeech with the proper language setting (based on Locale)
         textToSpeech = new TextToSpeech(context,
@@ -42,11 +42,8 @@ public class TTS {
                     }
                 });
 
-        KeyPressListener.listen(editText, CHAR_SPEAK, new KeyPressListener.OnKeyPressListener() {
-            @Override
-            public void onKeyPress() {
-                speak(getTextToSpeak(editText));
-            }
+        keyPressListener.addListener(CHAR_SPEAK, () -> {
+            speak(getTextToSpeak(editText));
         });
     }
 
