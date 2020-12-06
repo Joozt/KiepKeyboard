@@ -2,9 +2,11 @@ package nl.joozt.kiep.keyboard;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -30,6 +32,8 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         setContentView(R.layout.activity_fullscreen);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
+        configureSettingsFab();
+
         // Get the information of the editor where text is located
         editText = findViewById(R.id.editText);
         editText.setShowSoftInputOnFocus(false);
@@ -52,6 +56,26 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         new BatteryStatus(this, progressBar, frameLayout);
 
         updateCheck = new UpdateCheck(this);
+    }
+
+    private void configureSettingsFab() {
+        View fab = findViewById(R.id.fab);
+        fab.setAlpha(0.25f);
+        fab.setOnClickListener(view -> {
+            if (fab.getAlpha() < 0.8) {
+                fab.setAlpha(1.0f);
+                new Handler().postDelayed(() -> view.animate().alpha(0.25f).setDuration(1000), 3000);
+            } else {
+                fab.setAlpha(0.25f);
+                startActivity(new Intent(this, SettingsActivity.class));
+            }
+        });
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final boolean settingsButtonEnabled = preferences.getBoolean(SettingsActivity.ENABLE_SETTINGS_BUTTON, SettingsActivity.ENABLE_SETTINGS_BUTTON_DEFAULT);
+        if (!settingsButtonEnabled) {
+            fab.setVisibility(View.GONE);
+        }
     }
 
     @Override

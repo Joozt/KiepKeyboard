@@ -1,9 +1,20 @@
 <resources>
     <string name="app_name" translatable="false">KiepKeyboard</string>
     <string name="title_activity_settings">KiepKeyboard Settings</string>
+    <string name="settings">Settings</string>
+
+    <string name="update_ready">An update is ready to be installed</string>
+    <string name="update_restart">RESTART</string>
 
     <string name="setting_open_play_store_listing">Open Play Store listing</string>
     <string name="setting_open_play_store_listing_description">Open the page of this app in the Google Play Store</string>
+    <string name="setting_enable_settings_button">Enable settings button</string>
+    <string name="setting_enable_settings_button_description">Show the settings button in the bottom-right of the app</string>
+    <string name="setting_font_size">Font size</string>
+    <string name="setting_font_size_decrement_key">Decrement hotkey</string>
+    <string name="setting_font_size_decrement_key_description">Use the %s key to decrement the font size</string>
+    <string name="setting_font_size_increment_key">Increment hotkey</string>
+    <string name="setting_font_size_increment_key_description">Use the %s key to increment the font size</string>
     <string name="setting_yes_no">Yes/no</string>
     <string name="setting_enable_yes_no">Enable yes/no</string>
     <string name="setting_enable_yes_no_description">Enable speaking yes/no and highlight the screen</string>
@@ -18,12 +29,5 @@
     <string name="setting_show_battery_status_description">Show battery status bar at the bottom of the screen</string>
     <string name="setting_battery_status_lowbat">Enable low battery indication</string>
     <string name="setting_battery_status_lowbat_description">Change background color on low battery</string>
-    <string name="settings_battery_status_lowbat_level">Battery level for low battery warning</string>
-    <string name="setting_font_size">Font size</string>
-    <string name="setting_font_size_decrement_key">Decrement hotkey</string>
-    <string name="setting_font_size_decrement_key_description">Use the %s key to decrement the font size</string>
-    <string name="setting_font_size_increment_key">Increment hotkey</string>
-    <string name="setting_font_size_increment_key_description">Use the %s key to increment the font size</string>
-    <string name="update_ready">An update is ready to be installed</string>
-    <string name="update_restart">RESTART</string>
+    <string name="setting_battery_status_lowbat_level">Battery level for low battery warning</string>
 </resources>

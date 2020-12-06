@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_activity_settings">KiepKeyboard Instellingen</string>
+    <string name="settings">Instellingen</string>
+
+    <string name="update_ready">Update is gereed om te installeren</string>
+    <string name="update_restart">OPNIEUW STARTEN</string>
 
     <string name="setting_open_play_store_listing">Open Play Store pagina</string>
     <string name="setting_open_play_store_listing_description">Open de pagina van deze app in de Google Play Store</string>
+    <string name="setting_enable_settings_button">Instellingenknop weergeven</string>
+    <string name="setting_enable_settings_button_description">Toon de instellingenknop rechtsonderin de app</string>
+    <string name="setting_font_size">Tekstgrootte</string>
+    <string name="setting_font_size_decrement_key">Verklein sneltoets</string>
+    <string name="setting_font_size_decrement_key_description">Gebruik de %s toets om de tekst kleiner te maken</string>
+    <string name="setting_font_size_increment_key">Vergroot sneltoets</string>
+    <string name="setting_font_size_increment_key_description">Gebruik de %s toets om de tekst groter te maken</string>
     <string name="setting_yes_no">Ja/nee</string>
     <string name="setting_enable_yes_no">Ja/nee inschakelen</string>
     <string name="setting_enable_yes_no_description">Ja/nee laten uitspreken en het scherm laten oplichten</string>
@@ -18,12 +29,5 @@
     <string name="setting_show_battery_status_description">Toon batterijstatus-balk onderaan het scherm</string>
     <string name="setting_battery_status_lowbat">Aangeven indien batterij bijna leeg</string>
     <string name="setting_battery_status_lowbat_description">Achtergrond aanpassen indien batterij bijna leeg</string>
-    <string name="settings_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
-    <string name="update_ready">Update is gereed om te installeren</string>
-    <string name="update_restart">OPNIEUW STARTEN</string>
-    <string name="setting_font_size">Tekstgrootte</string>
-    <string name="setting_font_size_decrement_key">Verklein sneltoets</string>
-    <string name="setting_font_size_decrement_key_description">Gebruik de %s toets om de tekst kleiner te maken</string>
-    <string name="setting_font_size_increment_key">Vergroot sneltoets</string>
-    <string name="setting_font_size_increment_key_description">Gebruik de %s toets om de tekst groter te maken</string>
+    <string name="setting_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
 </resources>

@@ -19,6 +19,8 @@ public class SettingsActivity extends AppCompatActivity {
     private static final String[] functionKeys = {"[", "]", "\\", ";", "'", "/", "-", "=", "`", "{", "}", "|", ":", "\"", "<", ">", "~",
             "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Scroll lock", "Break"};
     public static final String OPEN_PLAY_STORE_LISTING = "open_play_store_listing";
+    public static final String ENABLE_SETTINGS_BUTTON = "enable_settings_button";
+    public static final boolean ENABLE_SETTINGS_BUTTON_DEFAULT = true;
     public static final String ENABLE_YES_NO = "enable_yes_no";
     public static final boolean ENABLE_YES_NO_DEFAULT = true;
     public static final String ENABLE_HIGHLIGHT = "enable_highlight";
@@ -57,6 +59,7 @@ public class SettingsActivity extends AppCompatActivity {
             Context context = getPreferenceManager().getContext();
             PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(context);
             addPlayStoreListing(context, screen);
+            addSettingsButton(context, screen);
             addFontSizeCategory(context, screen);
             addYesNoCategory(context, screen);
             addBatteryStatusCategory(context, screen);
@@ -81,6 +84,50 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
             screen.addPreference(openPlayStoreListing);
+        }
+
+        private void addSettingsButton(final Context context, PreferenceScreen screen) {
+            SwitchPreferenceCompat enableSettingsButton = new SwitchPreferenceCompat(context);
+            enableSettingsButton.setKey(ENABLE_SETTINGS_BUTTON);
+            enableSettingsButton.setTitle(R.string.setting_enable_settings_button);
+            enableSettingsButton.setSummary(R.string.setting_enable_settings_button_description);
+            enableSettingsButton.setDefaultValue(ENABLE_SETTINGS_BUTTON_DEFAULT);
+            screen.addPreference(enableSettingsButton);
+        }
+
+        private void addFontSizeCategory(Context context, PreferenceScreen screen) {
+            PreferenceCategory category = new PreferenceCategory(context);
+            category.setKey("font_size");
+            category.setTitle(R.string.setting_font_size);
+            screen.addPreference(category);
+
+            SeekBarPreference fontSize = new SeekBarPreference(context);
+            fontSize.setKey(FONT_SIZE);
+            fontSize.setTitle(R.string.setting_font_size);
+            fontSize.setDefaultValue(FONT_SIZE_DEFAULT);
+            fontSize.setSeekBarIncrement(10);
+            fontSize.setMin(10);
+            fontSize.setMax(400);
+            fontSize.setShowSeekBarValue(true);
+            category.addPreference(fontSize);
+
+            ListPreference decrementKey = new ListPreference(context);
+            decrementKey.setKey(FONT_SIZE_DECREMENT_KEY);
+            decrementKey.setTitle(R.string.setting_font_size_decrement_key);
+            decrementKey.setSummary(R.string.setting_font_size_decrement_key_description);
+            decrementKey.setEntries(functionKeys);
+            decrementKey.setEntryValues(functionKeys);
+            decrementKey.setDefaultValue(FONT_SIZE_DECREMENT_KEY_DEFAULT);
+            category.addPreference(decrementKey);
+
+            ListPreference incrementKey = new ListPreference(context);
+            incrementKey.setKey(FONT_SIZE_INCREMENT_KEY);
+            incrementKey.setTitle(R.string.setting_font_size_increment_key);
+            incrementKey.setSummary(R.string.setting_font_size_increment_key_description);
+            incrementKey.setEntries(functionKeys);
+            incrementKey.setEntryValues(functionKeys);
+            incrementKey.setDefaultValue(FONT_SIZE_INCREMENT_KEY_DEFAULT);
+            category.addPreference(incrementKey);
         }
 
         private void addYesNoCategory(Context context, PreferenceScreen screen) {
@@ -144,48 +191,13 @@ public class SettingsActivity extends AppCompatActivity {
 
             SeekBarPreference lowBatLevel = new SeekBarPreference(context);
             lowBatLevel.setKey(LOWBAT_LEVEL);
-            lowBatLevel.setTitle(R.string.settings_battery_status_lowbat_level);
+            lowBatLevel.setTitle(R.string.setting_battery_status_lowbat_level);
             lowBatLevel.setDefaultValue(LOWBAT_LEVEL_DEFAULT);
             lowBatLevel.setSeekBarIncrement(5);
             lowBatLevel.setMin(5);
             lowBatLevel.setMax(95);
             lowBatLevel.setShowSeekBarValue(true);
             category.addPreference(lowBatLevel);
-        }
-
-        private void addFontSizeCategory(Context context, PreferenceScreen screen) {
-            PreferenceCategory category = new PreferenceCategory(context);
-            category.setKey("font_size");
-            category.setTitle(R.string.setting_font_size);
-            screen.addPreference(category);
-
-            SeekBarPreference fontSize = new SeekBarPreference(context);
-            fontSize.setKey(FONT_SIZE);
-            fontSize.setTitle(R.string.setting_font_size);
-            fontSize.setDefaultValue(FONT_SIZE_DEFAULT);
-            fontSize.setSeekBarIncrement(10);
-            fontSize.setMin(10);
-            fontSize.setMax(400);
-            fontSize.setShowSeekBarValue(true);
-            category.addPreference(fontSize);
-
-            ListPreference decrementKey = new ListPreference(context);
-            decrementKey.setKey(FONT_SIZE_DECREMENT_KEY);
-            decrementKey.setTitle(R.string.setting_font_size_decrement_key);
-            decrementKey.setSummary(R.string.setting_font_size_decrement_key_description);
-            decrementKey.setEntries(functionKeys);
-            decrementKey.setEntryValues(functionKeys);
-            decrementKey.setDefaultValue(FONT_SIZE_DECREMENT_KEY_DEFAULT);
-            category.addPreference(decrementKey);
-
-            ListPreference incrementKey = new ListPreference(context);
-            incrementKey.setKey(FONT_SIZE_INCREMENT_KEY);
-            incrementKey.setTitle(R.string.setting_font_size_increment_key);
-            incrementKey.setSummary(R.string.setting_font_size_increment_key_description);
-            incrementKey.setEntries(functionKeys);
-            incrementKey.setEntryValues(functionKeys);
-            incrementKey.setDefaultValue(FONT_SIZE_INCREMENT_KEY_DEFAULT);
-            category.addPreference(incrementKey);
         }
     }
 }
