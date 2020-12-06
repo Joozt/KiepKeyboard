@@ -18,6 +18,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     private EditText editText;
     private TTS tts;
     private UpdateCheck updateCheck;
+    private FontSize fontSize;
 
     @Override
     @SuppressLint("SourceLockedOrientationActivity")
@@ -35,6 +36,8 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
 
         Analytics analytics = new Analytics(this);
         GlobalKeyPressListener keyPressListener = new GlobalKeyPressListener(editText);
+
+        fontSize = new FontSize(this, keyPressListener, editText);
 
         // Define instances of the yes/no functionality
         YesNo yesNo = new YesNo(this, keyPressListener, editText);
@@ -76,6 +79,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
             // Set the cursor to the end
             editText.setSelection(editText.getText().length());
         }
+        editText.requestFocus();
 
         updateCheck.checkForUpdate();
     }
@@ -95,6 +99,8 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     @SuppressLint("ApplySharedPref")
     protected void onPause() {
         super.onPause();
+
+        fontSize.saveCurrentFontSize();
 
         // Get settings and define preferences to store the text when minimizing / onPause
         SharedPreferences settings = getSharedPreferences(KIEP_KEYBOARD, Context.MODE_PRIVATE);

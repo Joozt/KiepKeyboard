@@ -19,6 +19,11 @@
     <string name="setting_battery_status_lowbat">Enable low battery indication</string>
     <string name="setting_battery_status_lowbat_description">Change background color on low battery</string>
     <string name="settings_battery_status_lowbat_level">Battery level for low battery warning</string>
+    <string name="setting_font_size">Font size</string>
+    <string name="setting_font_size_decrement_key">Decrement hotkey</string>
+    <string name="setting_font_size_decrement_key_description">Use the %s key to decrement the font size</string>
+    <string name="setting_font_size_increment_key">Increment hotkey</string>
+    <string name="setting_font_size_increment_key_description">Use the %s key to increment the font size</string>
     <string name="update_ready">An update is ready to be installed</string>
     <string name="update_restart">RESTART</string>
 </resources>

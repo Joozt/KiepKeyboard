@@ -21,4 +21,9 @@
     <string name="settings_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
     <string name="update_ready">Update is gereed om te installeren</string>
     <string name="update_restart">OPNIEUW STARTEN</string>
+    <string name="setting_font_size">Tekstgrootte</string>
+    <string name="setting_font_size_decrement_key">Verklein sneltoets</string>
+    <string name="setting_font_size_decrement_key_description">Gebruik de %s toets om de tekst kleiner te maken</string>
+    <string name="setting_font_size_increment_key">Vergroot sneltoets</string>
+    <string name="setting_font_size_increment_key_description">Gebruik de %s toets om de tekst groter te maken</string>
 </resources>

@@ -69,7 +69,7 @@ public class GlobalKeyPressListener {
 
         textView.setOnKeyListener((v, keyCode, event) -> {
             OnKeyPressListener listener = functionKeyListeners.get(keyCode);
-            if (event.getAction() == KeyEvent.ACTION_UP && listener != null) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && listener != null) {
                 listener.onKeyPress();
                 return true;
             }
@@ -87,7 +87,12 @@ public class GlobalKeyPressListener {
     }
 
     public void addListener(CharSequence charSequence, OnKeyPressListener listener) {
-        charListeners.put(charSequence, listener);
+        try {
+            FunctionKey functionKey = FunctionKey.fromString(charSequence.toString());
+            addListener(functionKey, listener);
+        } catch (IllegalArgumentException e) {
+            charListeners.put(charSequence, listener);
+        }
     }
 
     public void addListener(FunctionKey functionKey, OnKeyPressListener listener) {

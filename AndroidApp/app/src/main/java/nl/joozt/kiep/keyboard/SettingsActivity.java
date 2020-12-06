@@ -16,7 +16,8 @@ import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreferenceCompat;
 
 public class SettingsActivity extends AppCompatActivity {
-    private static final String[] functionKeys = {"[", "]", "\\", ";", "'", "/", "-", "=", "`", "{", "}", "|", ":", "\"", "<", ">", "~"};
+    private static final String[] functionKeys = {"[", "]", "\\", ";", "'", "/", "-", "=", "`", "{", "}", "|", ":", "\"", "<", ">", "~",
+            "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Scroll lock", "Break"};
     public static final String OPEN_PLAY_STORE_LISTING = "open_play_store_listing";
     public static final String ENABLE_YES_NO = "enable_yes_no";
     public static final boolean ENABLE_YES_NO_DEFAULT = true;
@@ -32,6 +33,12 @@ public class SettingsActivity extends AppCompatActivity {
     public static final boolean LOWBAT_WARNING_DEFAULT = true;
     public static final String LOWBAT_LEVEL = "lowbat_level";
     public static final int LOWBAT_LEVEL_DEFAULT = 10;
+    public static final String FONT_SIZE = "font_size";
+    public static final int FONT_SIZE_DEFAULT = 100;
+    public static final String FONT_SIZE_DECREMENT_KEY = "decrement_key";
+    public static final String FONT_SIZE_DECREMENT_KEY_DEFAULT = "F9";
+    public static final String FONT_SIZE_INCREMENT_KEY = "increment_key";
+    public static final String FONT_SIZE_INCREMENT_KEY_DEFAULT = "F10";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,6 +57,7 @@ public class SettingsActivity extends AppCompatActivity {
             Context context = getPreferenceManager().getContext();
             PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(context);
             addPlayStoreListing(context, screen);
+            addFontSizeCategory(context, screen);
             addYesNoCategory(context, screen);
             addBatteryStatusCategory(context, screen);
             setPreferenceScreen(screen);
@@ -143,6 +151,41 @@ public class SettingsActivity extends AppCompatActivity {
             lowBatLevel.setMax(95);
             lowBatLevel.setShowSeekBarValue(true);
             category.addPreference(lowBatLevel);
+        }
+
+        private void addFontSizeCategory(Context context, PreferenceScreen screen) {
+            PreferenceCategory category = new PreferenceCategory(context);
+            category.setKey("font_size");
+            category.setTitle(R.string.setting_font_size);
+            screen.addPreference(category);
+
+            SeekBarPreference fontSize = new SeekBarPreference(context);
+            fontSize.setKey(FONT_SIZE);
+            fontSize.setTitle(R.string.setting_font_size);
+            fontSize.setDefaultValue(FONT_SIZE_DEFAULT);
+            fontSize.setSeekBarIncrement(10);
+            fontSize.setMin(10);
+            fontSize.setMax(400);
+            fontSize.setShowSeekBarValue(true);
+            category.addPreference(fontSize);
+
+            ListPreference decrementKey = new ListPreference(context);
+            decrementKey.setKey(FONT_SIZE_DECREMENT_KEY);
+            decrementKey.setTitle(R.string.setting_font_size_decrement_key);
+            decrementKey.setSummary(R.string.setting_font_size_decrement_key_description);
+            decrementKey.setEntries(functionKeys);
+            decrementKey.setEntryValues(functionKeys);
+            decrementKey.setDefaultValue(FONT_SIZE_DECREMENT_KEY_DEFAULT);
+            category.addPreference(decrementKey);
+
+            ListPreference incrementKey = new ListPreference(context);
+            incrementKey.setKey(FONT_SIZE_INCREMENT_KEY);
+            incrementKey.setTitle(R.string.setting_font_size_increment_key);
+            incrementKey.setSummary(R.string.setting_font_size_increment_key_description);
+            incrementKey.setEntries(functionKeys);
+            incrementKey.setEntryValues(functionKeys);
+            incrementKey.setDefaultValue(FONT_SIZE_INCREMENT_KEY_DEFAULT);
+            category.addPreference(incrementKey);
         }
     }
 }
