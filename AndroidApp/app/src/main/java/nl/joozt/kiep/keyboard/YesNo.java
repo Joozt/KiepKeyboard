@@ -43,6 +43,7 @@ public class YesNo {
             if (analytics != null) {
                 analytics.logNo();
             }
+            return true;
         });
 
         String yesKey = preferences.getString(SettingsActivity.YES_KEY, SettingsActivity.YES_KEY_DEFAULT);
@@ -54,6 +55,7 @@ public class YesNo {
             if (analytics != null) {
                 analytics.logYes();
             }
+            return true;
         });
     }
 

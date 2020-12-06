@@ -30,4 +30,6 @@
     <string name="setting_battery_status_lowbat">Aangeven indien batterij bijna leeg</string>
     <string name="setting_battery_status_lowbat_description">Achtergrond aanpassen indien batterij bijna leeg</string>
     <string name="setting_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
+    <string name="setting_abbreviations">Afkortingen</string>
+    <string name="setting_abbreviations_description">Afkortingen in AutoHotKey formaat (::kkb::KiepKeyboard)</string>
 </resources>

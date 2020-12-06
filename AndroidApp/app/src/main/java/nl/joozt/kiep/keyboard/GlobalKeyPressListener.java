@@ -14,7 +14,7 @@ public class GlobalKeyPressListener {
     private final Map<Integer, OnKeyPressListener> functionKeyListeners = new HashMap<>();
 
     public interface OnKeyPressListener {
-        void onKeyPress();
+        boolean onKeyPress();
     }
 
     /**
@@ -34,7 +34,8 @@ public class GlobalKeyPressListener {
         F11(KeyEvent.KEYCODE_F11),
         F12(KeyEvent.KEYCODE_F12),
         SCROLL_LOCK(KeyEvent.KEYCODE_SCROLL_LOCK),
-        BREAK(KeyEvent.KEYCODE_BREAK);
+        BREAK(KeyEvent.KEYCODE_BREAK),
+        BACKSPACE(KeyEvent.KEYCODE_DEL);
 
         private final int keyCode;
 
@@ -70,8 +71,7 @@ public class GlobalKeyPressListener {
         textView.setOnKeyListener((v, keyCode, event) -> {
             OnKeyPressListener listener = functionKeyListeners.get(keyCode);
             if (event.getAction() == KeyEvent.ACTION_DOWN && listener != null) {
-                listener.onKeyPress();
-                return true;
+                return listener.onKeyPress();
             }
             return false;
         });

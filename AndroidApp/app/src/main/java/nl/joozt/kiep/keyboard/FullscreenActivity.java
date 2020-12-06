@@ -43,6 +43,8 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
 
         fontSize = new FontSize(this, keyPressListener, editText);
 
+        new Abbreviations(this, keyPressListener, editText);
+
         // Define instances of the yes/no functionality
         YesNo yesNo = new YesNo(this, keyPressListener, editText);
         yesNo.setAnalytics(analytics);

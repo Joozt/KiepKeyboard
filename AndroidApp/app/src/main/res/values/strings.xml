@@ -30,4 +30,6 @@
     <string name="setting_battery_status_lowbat">Enable low battery indication</string>
     <string name="setting_battery_status_lowbat_description">Change background color on low battery</string>
     <string name="setting_battery_status_lowbat_level">Battery level for low battery warning</string>
+    <string name="setting_abbreviations">Abbreviations</string>
+    <string name="setting_abbreviations_description">Abbreviations in AutoHotKey syntax (::kkb::KiepKeyboard)</string>
 </resources>

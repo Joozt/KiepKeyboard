@@ -26,6 +26,7 @@ public class FontSize {
             if (fontSize >= 10) {
                 editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
             }
+            return true;
         });
 
         String incrementKey = preferences.getString(SettingsActivity.FONT_SIZE_INCREMENT_KEY, SettingsActivity.FONT_SIZE_INCREMENT_KEY_DEFAULT);
@@ -34,6 +35,7 @@ public class FontSize {
             if (fontSize <= 400) {
                 editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
             }
+            return true;
         });
     }
 
