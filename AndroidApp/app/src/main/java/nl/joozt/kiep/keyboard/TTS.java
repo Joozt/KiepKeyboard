@@ -44,6 +44,7 @@ public class TTS {
 
         keyPressListener.addListener(CHAR_SPEAK, () -> {
             speak(getTextToSpeak(editText));
+            return true;
         });
     }
 

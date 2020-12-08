@@ -7,6 +7,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
@@ -21,6 +22,8 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String OPEN_PLAY_STORE_LISTING = "open_play_store_listing";
     public static final String ENABLE_SETTINGS_BUTTON = "enable_settings_button";
     public static final boolean ENABLE_SETTINGS_BUTTON_DEFAULT = true;
+    public static final String ABBREVIATIONS = "abbreviations";
+    public static final String ABBREVIATIONS_DEFAULT = "::kkb::KiepKeyboard";
     public static final String ENABLE_YES_NO = "enable_yes_no";
     public static final boolean ENABLE_YES_NO_DEFAULT = true;
     public static final String ENABLE_HIGHLIGHT = "enable_highlight";
@@ -60,6 +63,7 @@ public class SettingsActivity extends AppCompatActivity {
             PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(context);
             addPlayStoreListing(context, screen);
             addSettingsButton(context, screen);
+            addAbbreviations(context, screen);
             addFontSizeCategory(context, screen);
             addYesNoCategory(context, screen);
             addBatteryStatusCategory(context, screen);
@@ -93,6 +97,16 @@ public class SettingsActivity extends AppCompatActivity {
             enableSettingsButton.setSummary(R.string.setting_enable_settings_button_description);
             enableSettingsButton.setDefaultValue(ENABLE_SETTINGS_BUTTON_DEFAULT);
             screen.addPreference(enableSettingsButton);
+        }
+
+        private void addAbbreviations(Context context, PreferenceScreen screen) {
+            EditTextPreference abbreviations = new EditTextPreference(context);
+            abbreviations.setKey(ABBREVIATIONS);
+            abbreviations.setTitle(R.string.setting_abbreviations);
+            abbreviations.setSummary(R.string.setting_abbreviations_description);
+            abbreviations.setDefaultValue(ABBREVIATIONS_DEFAULT);
+            abbreviations.setOnBindEditTextListener(editText -> editText.setLines(5));
+            screen.addPreference(abbreviations);
         }
 
         private void addFontSizeCategory(Context context, PreferenceScreen screen) {
