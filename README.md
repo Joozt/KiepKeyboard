@@ -10,6 +10,7 @@ Fullscreen typing Android app for hardware USB keyboard. Designed as lightweight
 
 For betatesting latest changes apply here: https://play.google.com/apps/internaltest/4699439541078434612
 
+
 ## Hardware
 [RL-K7 keyboard](https://www.aliexpress.com/item/4000336069065.html) with laser-cut acrylic glass grid frame overlay for typing support. The grid frame has an integrated phone stand. The keyboard has a modified cable; a short micro-USB OTG cable.
 
