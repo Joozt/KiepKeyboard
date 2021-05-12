@@ -66,6 +66,7 @@ public class UpdateCheck implements OnSuccessListener<AppUpdateInfo>, InstallSta
 
     private void popupSnackbarForCompleteUpdate() {
         Snackbar snackbar = Snackbar.make(activity.findViewById(R.id.content), R.string.update_ready, Snackbar.LENGTH_INDEFINITE);
+        snackbar.setAnchorView(R.id.progressBar);
         snackbar.setAction(R.string.update_restart, view -> updateManager.completeUpdate());
         snackbar.show();
     }

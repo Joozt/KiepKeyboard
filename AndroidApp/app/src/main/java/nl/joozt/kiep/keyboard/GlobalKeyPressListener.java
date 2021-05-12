@@ -1,6 +1,7 @@
 package nl.joozt.kiep.keyboard;
 
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -20,6 +21,7 @@ public class GlobalKeyPressListener {
     /**
      * Function keys can be tested in Android Emulator, by running 'adb shell input keyevent [keycode]'
      */
+    @SuppressWarnings("unused")
     public enum FunctionKey {
         F1(KeyEvent.KEYCODE_F1),
         F2(KeyEvent.KEYCODE_F2),
@@ -80,7 +82,10 @@ public class GlobalKeyPressListener {
     private static boolean containsCharSequence(Editable editable, CharSequence sequence) {
         if (editable.toString().contains(sequence)) {
             Editable ab = new SpannableStringBuilder(editable.toString().replace(sequence, ""));
+            InputFilter[] filters = editable.getFilters();
+            editable.setFilters(new InputFilter[]{});
             editable.replace(0, editable.length(), ab);
+            editable.setFilters(filters);
             return true;
         }
         return false;

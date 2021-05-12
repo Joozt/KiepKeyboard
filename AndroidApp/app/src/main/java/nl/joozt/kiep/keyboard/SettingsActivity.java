@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,10 @@ public class SettingsActivity extends AppCompatActivity {
     public static final boolean ENABLE_SETTINGS_BUTTON_DEFAULT = true;
     public static final String ABBREVIATIONS = "abbreviations";
     public static final String ABBREVIATIONS_DEFAULT = "::kkb::KiepKeyboard";
+    public static final String DOWNLOAD_TXT_URL = "download_txt_url";
+    public static final String DOWNLOAD_TXT_URL_DEFAULT = "";
+    public static final String DOWNLOAD_TXT_KEY = "download_txt_key";
+    public static final String DOWNLOAD_TXT_KEY_DEFAULT = "F2";
     public static final String ENABLE_YES_NO = "enable_yes_no";
     public static final boolean ENABLE_YES_NO_DEFAULT = true;
     public static final String ENABLE_HIGHLIGHT = "enable_highlight";
@@ -64,6 +69,7 @@ public class SettingsActivity extends AppCompatActivity {
             addPlayStoreListing(context, screen);
             addSettingsButton(context, screen);
             addAbbreviations(context, screen);
+            addDownloadTxtCategory(context, screen);
             addFontSizeCategory(context, screen);
             addYesNoCategory(context, screen);
             addBatteryStatusCategory(context, screen);
@@ -72,6 +78,7 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(NO_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(YES_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(ENABLE_HIGHLIGHT).setDependency(ENABLE_YES_NO);
+            screen.findPreference(DOWNLOAD_TXT_KEY).setDependency(DOWNLOAD_TXT_URL);
         }
 
         private void addPlayStoreListing(final Context context, PreferenceScreen screen) {
@@ -107,6 +114,30 @@ public class SettingsActivity extends AppCompatActivity {
             abbreviations.setDefaultValue(ABBREVIATIONS_DEFAULT);
             abbreviations.setOnBindEditTextListener(editText -> editText.setLines(5));
             screen.addPreference(abbreviations);
+        }
+
+        private void addDownloadTxtCategory(Context context, PreferenceScreen screen) {
+            PreferenceCategory category = new PreferenceCategory(context);
+            category.setKey("download_txt");
+            category.setTitle(R.string.setting_download_txt);
+            screen.addPreference(category);
+
+            EditTextPreference url = new EditTextPreference(context);
+            url.setKey(DOWNLOAD_TXT_URL);
+            url.setTitle(R.string.setting_download_txt_url);
+            url.setSummary(R.string.setting_download_txt_url_description);
+            url.setDefaultValue(DOWNLOAD_TXT_URL_DEFAULT);
+            url.setOnBindEditTextListener(TextView::setSingleLine);
+            category.addPreference(url);
+
+            ListPreference key = new ListPreference(context);
+            key.setKey(DOWNLOAD_TXT_KEY);
+            key.setTitle(R.string.setting_download_txt_key);
+            key.setSummary(R.string.setting_download_txt_key_description);
+            key.setEntries(functionKeys);
+            key.setEntryValues(functionKeys);
+            key.setDefaultValue(DOWNLOAD_TXT_KEY_DEFAULT);
+            category.addPreference(key);
         }
 
         private void addFontSizeCategory(Context context, PreferenceScreen screen) {

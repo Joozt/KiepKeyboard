@@ -23,11 +23,19 @@
         android:textSize="100sp" />
 
     <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <ProgressBar
         android:id="@+id/progressBar"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="8dp"
         android:layout_gravity="bottom"
+        android:elevation="7dp"
         android:progress="0"
         android:progressBackgroundTint="@android:color/transparent"
         android:progressTint="@color/colorAccent"

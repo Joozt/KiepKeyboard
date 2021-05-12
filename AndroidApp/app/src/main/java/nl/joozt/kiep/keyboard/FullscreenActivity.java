@@ -35,6 +35,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         editText.setShowSoftInputOnFocus(false);
 
         Analytics analytics = new Analytics(this);
+
         GlobalKeyPressListener keyPressListener = new GlobalKeyPressListener(editText);
 
         fontSize = new FontSize(this, keyPressListener, editText);
@@ -49,9 +50,11 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         tts = new TTS(this, keyPressListener, editText);
         tts.setAnalytics(analytics);
 
-        FrameLayout frameLayout = findViewById(R.id.content);
+        FrameLayout background = findViewById(R.id.content);
         ProgressBar progressBar = findViewById(R.id.progressBar);
-        new BatteryStatus(this, progressBar, frameLayout);
+        new BatteryStatus(this, progressBar, background);
+
+        ReadTxtFileActivity.registerKeyPressListener(this, keyPressListener);
 
         updateCheck = new UpdateCheck(this);
     }

@@ -6,6 +6,12 @@
     <string name="update_ready">An update is ready to be installed</string>
     <string name="update_restart">RESTART</string>
 
+    <string name="unable_to_download">Unable to download (offline?)</string>
+    <string name="failed_request">Failed download request</string>
+    <string name="no_data">No data downloaded</string>
+    <string name="showing_downloaded">Showing downloaded file</string>
+    <string name="downloading">Downloading</string>
+
     <string name="setting_open_play_store_listing">Open Play Store listing</string>
     <string name="setting_open_play_store_listing_description">Open the page of this app in the Google Play Store</string>
     <string name="setting_enable_settings_button">Enable settings button</string>
@@ -19,9 +25,9 @@
     <string name="setting_enable_yes_no">Enable yes/no</string>
     <string name="setting_enable_yes_no_description">Enable speaking yes/no and highlight the screen</string>
     <string name="setting_yes_key">Yes hotkey</string>
-    <string name="setting_yes_key_description">Use the %s key to press to speak the "yes" sound and highlight the screen in green</string>
+    <string name="setting_yes_key_description">Use the %s key to speak the "yes" sound and highlight the screen in green</string>
     <string name="setting_no_key">No hotkey</string>
-    <string name="setting_no_key_description">Use the %s key to press to speak the "no" sound and highlight the screen in red</string>
+    <string name="setting_no_key_description">Use the %s key to speak the "no" sound and highlight the screen in red</string>
     <string name="setting_enable_hightlight">Enable highlight</string>
     <string name="setting_enable_hightlight_description">Enable highlighting the screen on yes/no</string>
     <string name="setting_battery_status">Battery status</string>
@@ -32,4 +38,9 @@
     <string name="setting_battery_status_lowbat_level">Battery level for low battery warning</string>
     <string name="setting_abbreviations">Abbreviations</string>
     <string name="setting_abbreviations_description">Abbreviations in AutoHotKey syntax (::kkb::KiepKeyboard)</string>
+    <string name="setting_download_txt">Download and show a .txt file (read-only)</string>
+    <string name="setting_download_txt_url">The URL to a .txt file</string>
+    <string name="setting_download_txt_url_description">For example a shared link from Dropbox</string>
+    <string name="setting_download_txt_key">Download .txt file hotkey</string>
+    <string name="setting_download_txt_key_description">Use the %s key show a downloaded .txt file</string>
 </resources>

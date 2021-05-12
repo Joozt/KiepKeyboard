@@ -48,6 +48,10 @@ public class TTS {
         });
     }
 
+    public String getCharSpeak() {
+        return CHAR_SPEAK;
+    }
+
     public void setAnalytics(Analytics analytics) {
         this.analytics = analytics;
     }

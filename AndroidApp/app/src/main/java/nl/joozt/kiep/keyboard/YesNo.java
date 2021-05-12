@@ -18,6 +18,8 @@ public class YesNo {
     private final int noSoundId;
     private final int yesSoundId;
     private Analytics analytics = null;
+    private final String noKey;
+    private final String yesKey;
 
     public YesNo(Context context, GlobalKeyPressListener keyPressListener, EditText editText) {
         this.context = context;
@@ -31,10 +33,12 @@ public class YesNo {
         final boolean highlightEnabled = preferences.getBoolean(SettingsActivity.ENABLE_HIGHLIGHT, SettingsActivity.ENABLE_HIGHLIGHT_DEFAULT);
         boolean yesNoEnabled = preferences.getBoolean(SettingsActivity.ENABLE_YES_NO, SettingsActivity.ENABLE_YES_NO_DEFAULT);
         if (!yesNoEnabled) {
+            noKey = "";
+            yesKey = "";
             return;
         }
 
-        String noKey = preferences.getString(SettingsActivity.NO_KEY, SettingsActivity.NO_KEY_DEFAULT);
+        noKey = preferences.getString(SettingsActivity.NO_KEY, SettingsActivity.NO_KEY_DEFAULT);
         keyPressListener.addListener(noKey, () -> {
             playSound(noSoundId);
             if (highlightEnabled) {
@@ -46,7 +50,7 @@ public class YesNo {
             return true;
         });
 
-        String yesKey = preferences.getString(SettingsActivity.YES_KEY, SettingsActivity.YES_KEY_DEFAULT);
+        yesKey = preferences.getString(SettingsActivity.YES_KEY, SettingsActivity.YES_KEY_DEFAULT);
         keyPressListener.addListener(yesKey, () -> {
             playSound(yesSoundId);
             if (highlightEnabled) {
@@ -61,6 +65,14 @@ public class YesNo {
 
     public void setAnalytics(Analytics analytics) {
         this.analytics = analytics;
+    }
+
+    public String getNoKey() {
+        return noKey;
+    }
+
+    public String getYesKey() {
+        return yesKey;
     }
 
     private int loadWav(String wavName) {
