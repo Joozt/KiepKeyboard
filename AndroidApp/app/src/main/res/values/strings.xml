@@ -28,8 +28,8 @@
     <string name="setting_yes_key_description">Use the %s key to speak the "yes" sound and highlight the screen in green</string>
     <string name="setting_no_key">No hotkey</string>
     <string name="setting_no_key_description">Use the %s key to speak the "no" sound and highlight the screen in red</string>
-    <string name="setting_enable_hightlight">Enable highlight</string>
-    <string name="setting_enable_hightlight_description">Enable highlighting the screen on yes/no</string>
+    <string name="setting_enable_highlight">Enable highlight</string>
+    <string name="setting_enable_highlight_description">Enable highlighting the screen on yes/no</string>
     <string name="setting_battery_status">Battery status</string>
     <string name="setting_show_battery_status">Show battery status</string>
     <string name="setting_show_battery_status_description">Show battery status bar at the bottom of the screen</string>

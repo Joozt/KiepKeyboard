@@ -208,8 +208,8 @@ public class SettingsActivity extends AppCompatActivity {
 
             SwitchPreferenceCompat enableHighlight = new SwitchPreferenceCompat(context);
             enableHighlight.setKey(ENABLE_HIGHLIGHT);
-            enableHighlight.setTitle(R.string.setting_enable_hightlight);
-            enableHighlight.setSummary(R.string.setting_enable_hightlight_description);
+            enableHighlight.setTitle(R.string.setting_enable_highlight);
+            enableHighlight.setSummary(R.string.setting_enable_highlight_description);
             enableHighlight.setDefaultValue(ENABLE_HIGHLIGHT_DEFAULT);
             category.addPreference(enableHighlight);
         }
