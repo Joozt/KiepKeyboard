@@ -44,3 +44,4 @@ jobs:
           packageName: nl.joozt.kiep.keyboard
           releaseFile: ${{ steps.sign-release.outputs.signedReleaseFile }}
           track: internal
+          status: completed
