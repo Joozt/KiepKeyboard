@@ -41,8 +41,8 @@ public class GlobalKeyPressListener {
 
         private final int keyCode;
 
-        public static GlobalKeyPressListener.FunctionKey fromString(String key) {
-            return GlobalKeyPressListener.FunctionKey.valueOf(key.toUpperCase().replace(" ", "_"));
+        public static FunctionKey fromString(String key) {
+            return FunctionKey.valueOf(key.toUpperCase().replace(" ", "_"));
         }
 
         FunctionKey(int keyCode) {
