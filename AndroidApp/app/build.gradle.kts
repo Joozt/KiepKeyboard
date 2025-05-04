@@ -12,8 +12,8 @@ android {
         applicationId = "nl.joozt.kiep.keyboard"
         minSdk = 24
         targetSdk = 35
-        versionCode = 56
-        versionName = "Always animate"
+        versionCode = 57
+        versionName = "Sensor landscape"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
