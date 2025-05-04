@@ -1,7 +1,6 @@
 package nl.joozt.kiep.keyboard;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -80,7 +79,7 @@ public class YesNo {
     }
 
     private int loadWav(String wavName) {
-        int resourceId = context.getResources().getIdentifier(wavName, "raw", context.getPackageName());
+        @SuppressLint("DiscouragedApi") int resourceId = context.getResources().getIdentifier(wavName, "raw", context.getPackageName());
         return soundPool.load(context, resourceId, 1);
     }
 
