@@ -12,7 +12,7 @@ android {
         applicationId = "nl.joozt.kiep.keyboard"
         minSdk = 24
         targetSdk = 35
-        versionCode = 54
+        versionCode = 55
         versionName = "1-e0d1595"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
