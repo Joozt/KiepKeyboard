@@ -7,8 +7,12 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.SoundPool;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.View;
 import android.widget.EditText;
 
+import androidx.core.graphics.ColorUtils;
 import androidx.preference.PreferenceManager;
 
 public class YesNo {
@@ -85,29 +89,30 @@ public class YesNo {
     }
 
     private void highlightBackground(final int highlightColor) {
-        int currentBackgroundColor = ((ColorDrawable) editText.getBackground()).getColor();
-        ObjectAnimator animator = ObjectAnimator.ofArgb(editText, "backgroundColor", currentBackgroundColor, highlightColor);
-        animator.setDuration(250);
-        animator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                ObjectAnimator.ofArgb(editText, "backgroundColor", highlightColor, Color.TRANSPARENT)
-                        .setDuration(250)
-                        .start();
-            }
+        int currentBackgroundColor = Color.TRANSPARENT;
+        if (editText.getBackground() instanceof ColorDrawable) {
+            currentBackgroundColor = ((ColorDrawable) editText.getBackground()).getColor();
+        }
 
-            @Override
-            public void onAnimationStart(Animator animation) {
-            }
+        animateBackgroundColorManually(editText, currentBackgroundColor, highlightColor, 250);
+        new Handler(Looper.getMainLooper()).postDelayed(() ->
+                animateBackgroundColorManually(editText, highlightColor, Color.TRANSPARENT, 250), 400);
+    }
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
-            }
+    public static void animateBackgroundColorManually(final View view, final int startColor, final int endColor, final long duration) {
+        final Handler handler = new Handler(Looper.getMainLooper());
+        final long startTime = System.currentTimeMillis();
 
+        handler.post(new Runnable() {
             @Override
-            public void onAnimationRepeat(Animator animation) {
+            public void run() {
+                float fraction = Math.min((float) (System.currentTimeMillis() - startTime) / duration, 1.0f);
+                view.setBackgroundColor(ColorUtils.blendARGB(startColor, endColor, fraction));
+
+                if (fraction < 1.0f) {
+                    handler.post(this);
+                }
             }
         });
-        animator.start();
     }
 }
