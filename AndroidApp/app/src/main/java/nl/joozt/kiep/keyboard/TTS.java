@@ -59,7 +59,7 @@ public class TTS {
     // Speak functionality
     public void speak(String text) {
         // If no argument, return
-        if (textToSpeech == null || text == null || text.length() == 0) {
+        if (textToSpeech == null || text == null || text.isEmpty()) {
             return;
         }
 

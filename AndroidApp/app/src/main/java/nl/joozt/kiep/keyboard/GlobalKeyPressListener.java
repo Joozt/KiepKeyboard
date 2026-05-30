@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class GlobalKeyPressListener {
     private final Map<CharSequence, OnKeyPressListener> charListeners = new HashMap<>();
@@ -56,7 +57,7 @@ public class GlobalKeyPressListener {
             public void afterTextChanged(Editable s) {
                 for (CharSequence charSequence : charListeners.keySet()) {
                     if (containsCharSequence(s, charSequence)) {
-                        charListeners.get(charSequence).onKeyPress();
+                        Objects.requireNonNull(charListeners.get(charSequence)).onKeyPress();
                     }
                 }
             }

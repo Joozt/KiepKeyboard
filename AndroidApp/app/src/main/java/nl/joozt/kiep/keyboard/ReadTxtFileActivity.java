@@ -18,6 +18,7 @@ import androidx.preference.PreferenceManager;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -69,7 +70,7 @@ public class ReadTxtFileActivity extends AppCompatActivity {
         yesNo = new YesNo(this, keyPressListener, editText);
         tts = new TTS(this, keyPressListener, editText);
 
-        downloadFile(getIntent().getStringExtra(EXTRA_URL));
+        downloadFile(Objects.requireNonNull(getIntent().getStringExtra(EXTRA_URL)));
     }
 
     @Override
@@ -130,8 +131,6 @@ public class ReadTxtFileActivity extends AppCompatActivity {
                 try (ResponseBody responseBody = response.body()) {
                     if (!response.isSuccessful()) {
                         showFailure(R.string.failed_request);
-                    } else if (responseBody == null) {
-                        showFailure(R.string.no_data);
                     } else {
                         showText(responseBody.string());
                     }

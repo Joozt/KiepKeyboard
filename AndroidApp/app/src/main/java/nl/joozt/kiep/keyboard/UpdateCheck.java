@@ -1,8 +1,12 @@
 package nl.joozt.kiep.keyboard;
 
 import android.app.Activity;
-import android.content.IntentSender;
 import android.util.Log;
+
+import androidx.activity.result.ActivityResultCaller;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -10,6 +14,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.appupdate.AppUpdateOptions;
 import com.google.android.play.core.install.InstallState;
 import com.google.android.play.core.install.InstallStateUpdatedListener;
 import com.google.android.play.core.install.model.AppUpdateType;
@@ -20,9 +25,19 @@ public class UpdateCheck implements OnSuccessListener<AppUpdateInfo>, InstallSta
     private static final String TAG = UpdateCheck.class.getSimpleName();
     private final Activity activity;
     private final AppUpdateManager updateManager;
+    private ActivityResultLauncher<IntentSenderRequest> updateLauncher;
 
     public UpdateCheck(Activity activity) {
         this.activity = activity;
+        if (activity instanceof ActivityResultCaller) {
+            updateLauncher = ((ActivityResultCaller) activity).registerForActivityResult(
+                    new ActivityResultContracts.StartIntentSenderForResult(),
+                    result -> {
+                        if (result.getResultCode() != Activity.RESULT_OK) {
+                            Log.e(TAG, "Update flow failed! Result code: " + result.getResultCode());
+                        }
+                    });
+        }
         updateManager = AppUpdateManagerFactory.create(activity);
     }
 
@@ -48,10 +63,8 @@ public class UpdateCheck implements OnSuccessListener<AppUpdateInfo>, InstallSta
     private void startUpdate(AppUpdateInfo appUpdateInfo) {
         Log.d(TAG, "Starting flexible update");
         updateManager.registerListener(this);
-        try {
-            updateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.FLEXIBLE, activity, 1);
-        } catch (IntentSender.SendIntentException ignored) {
-            Log.e(TAG, "Start update failed");
+        if (updateLauncher != null) {
+            updateManager.startUpdateFlowForResult(appUpdateInfo, updateLauncher, AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build());
         }
     }
 
