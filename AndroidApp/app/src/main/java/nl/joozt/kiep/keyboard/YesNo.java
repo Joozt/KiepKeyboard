@@ -23,6 +23,8 @@ public class YesNo {
     private Analytics analytics = null;
     private final String noKey;
     private final String yesKey;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable resetBackgroundRunnable = null;
 
     public YesNo(Context context, GlobalKeyPressListener keyPressListener, EditText editText) {
         this.context = context;
@@ -93,9 +95,15 @@ public class YesNo {
             currentBackgroundColor = ((ColorDrawable) editText.getBackground()).getColor();
         }
 
+        // Highlight
         animateBackgroundColorManually(editText, currentBackgroundColor, highlightColor, 250);
-        new Handler(Looper.getMainLooper()).postDelayed(() ->
-                animateBackgroundColorManually(editText, highlightColor, Color.TRANSPARENT, 250), 400);
+
+        // Revert highlight
+        if (resetBackgroundRunnable != null) {
+            handler.removeCallbacks(resetBackgroundRunnable);
+        }
+        resetBackgroundRunnable = () -> animateBackgroundColorManually(editText, highlightColor, Color.TRANSPARENT, 250);
+        handler.postDelayed(resetBackgroundRunnable, 600);
     }
 
     public static void animateBackgroundColorManually(final View view, final int startColor, final int endColor, final long duration) {
