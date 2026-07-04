@@ -28,6 +28,9 @@ public class TTS {
             return;
         }
 
+        final float rate = preferences.getInt(SettingsActivity.TTS_RATE, SettingsActivity.TTS_RATE_DEFAULT) / 100f;
+        final float pitch = preferences.getInt(SettingsActivity.TTS_PITCH, SettingsActivity.TTS_PITCH_DEFAULT) / 100f;
+
         // Initialize TextToSpeech with the proper language setting (based on Locale)
         textToSpeech = new TextToSpeech(context,
                 new OnInitListener() {
@@ -44,6 +47,8 @@ public class TTS {
                             } else {
                                 Log.i(TAG, "TextToSpeech is Initialized");
                             }
+                            textToSpeech.setSpeechRate(rate);
+                            textToSpeech.setPitch(pitch);
                         } else {
                             // Display TTS is not able to initialize
                             Log.e(TAG, "Failed to Initialize");

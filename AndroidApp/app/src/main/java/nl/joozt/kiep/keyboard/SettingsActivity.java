@@ -36,6 +36,10 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String TTS_KEY_DEFAULT = "\\";
     public static final String TTS_SPEAK_ALL_KEY = "tts_speak_all_key";
     public static final String TTS_SPEAK_ALL_KEY_DEFAULT = "F5";
+    public static final String TTS_RATE = "tts_rate";
+    public static final int TTS_RATE_DEFAULT = 100;
+    public static final String TTS_PITCH = "tts_pitch";
+    public static final int TTS_PITCH_DEFAULT = 100;
     public static final String ENABLE_YES_NO = "enable_yes_no";
     public static final boolean ENABLE_YES_NO_DEFAULT = true;
     public static final String ENABLE_HIGHLIGHT = "enable_highlight";
@@ -89,6 +93,8 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(DOWNLOAD_TXT_KEY).setDependency(DOWNLOAD_TXT_URL);
             screen.findPreference(TTS_KEY).setDependency(ENABLE_TTS);
             screen.findPreference(TTS_SPEAK_ALL_KEY).setDependency(ENABLE_TTS);
+            screen.findPreference(TTS_RATE).setDependency(ENABLE_TTS);
+            screen.findPreference(TTS_PITCH).setDependency(ENABLE_TTS);
 
             preventDuplicateKeys();
         }
@@ -290,6 +296,26 @@ public class SettingsActivity extends AppCompatActivity {
             speakAllKey.setEntryValues(functionKeys);
             speakAllKey.setDefaultValue(TTS_SPEAK_ALL_KEY_DEFAULT);
             category.addPreference(speakAllKey);
+
+            SeekBarPreference rate = new SeekBarPreference(context);
+            rate.setKey(TTS_RATE);
+            rate.setTitle(R.string.setting_tts_rate);
+            rate.setDefaultValue(TTS_RATE_DEFAULT);
+            rate.setSeekBarIncrement(25);
+            rate.setMin(25);
+            rate.setMax(300);
+            rate.setShowSeekBarValue(true);
+            category.addPreference(rate);
+
+            SeekBarPreference pitch = new SeekBarPreference(context);
+            pitch.setKey(TTS_PITCH);
+            pitch.setTitle(R.string.setting_tts_pitch);
+            pitch.setDefaultValue(TTS_PITCH_DEFAULT);
+            pitch.setSeekBarIncrement(10);
+            pitch.setMin(50);
+            pitch.setMax(200);
+            pitch.setShowSeekBarValue(true);
+            category.addPreference(pitch);
         }
 
         private void addBatteryStatusCategory(Context context, PreferenceScreen screen) {

@@ -49,5 +49,7 @@
     <string name="setting_tts_key_description">Use the %s key to speak the last sentence aloud</string>
     <string name="setting_tts_speak_all_key">Speak everything hotkey</string>
     <string name="setting_tts_speak_all_key_description">Use the %s key to speak all text aloud</string>
+    <string name="setting_tts_rate">Speech rate (%)</string>
+    <string name="setting_tts_pitch">Pitch (%)</string>
     <string name="setting_download_txt_key_description">Use the %s key to show a downloaded .txt file</string>
 </resources>
