@@ -1,11 +1,9 @@
 package nl.joozt.kiep.keyboard;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -64,11 +62,13 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
 
     private void configureSettingsFab() {
         View fab = findViewById(R.id.fab);
+        Runnable dimFab = () -> fab.animate().alpha(0.25f).setDuration(1000);
         fab.setAlpha(0.25f);
         fab.setOnClickListener(view -> {
+            fab.removeCallbacks(dimFab); // A pending dim must not race the second tap
             if (fab.getAlpha() < 0.8) {
                 fab.setAlpha(1.0f);
-                new Handler().postDelayed(() -> view.animate().alpha(0.25f).setDuration(1000), 3000);
+                fab.postDelayed(dimFab, 3000);
             } else {
                 fab.setAlpha(0.25f);
                 startActivity(new Intent(this, SettingsActivity.class));
@@ -137,7 +137,6 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     }
 
     @Override
-    @SuppressLint("ApplySharedPref")
     protected void onPause() {
         super.onPause();
 
@@ -149,7 +148,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
 
         // Store the result in the preferences
         editor.putString("Text", editText.getText().toString());
-        editor.commit();
+        editor.apply();
     }
 
     @Override

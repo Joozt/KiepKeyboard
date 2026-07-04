@@ -1,6 +1,5 @@
 package nl.joozt.kiep.keyboard;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -15,7 +14,6 @@ import androidx.core.graphics.ColorUtils;
 import androidx.preference.PreferenceManager;
 
 public class YesNo {
-    private final Context context;
     private final EditText editText;
     private final SoundPool soundPool;
     private final int noSoundId;
@@ -27,12 +25,11 @@ public class YesNo {
     private Runnable resetBackgroundRunnable = null;
 
     public YesNo(Context context, GlobalKeyPressListener keyPressListener, EditText editText) {
-        this.context = context;
         this.editText = editText;
 
         soundPool = new SoundPool.Builder().setMaxStreams(1).build();
-        noSoundId = loadWav("no");
-        yesSoundId = loadWav("yes");
+        noSoundId = soundPool.load(context, R.raw.no, 1);
+        yesSoundId = soundPool.load(context, R.raw.yes, 1);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean highlightEnabled = preferences.getBoolean(SettingsActivity.ENABLE_HIGHLIGHT, SettingsActivity.ENABLE_HIGHLIGHT_DEFAULT);
@@ -85,11 +82,6 @@ public class YesNo {
         return yesKey;
     }
 
-    private int loadWav(String wavName) {
-        @SuppressLint("DiscouragedApi") int resourceId = context.getResources().getIdentifier(wavName, "raw", context.getPackageName());
-        return soundPool.load(context, resourceId, 1);
-    }
-
     private void playSound(int soundId) {
         soundPool.play(soundId, 1, 1, 1, 0, 1);
     }
@@ -112,17 +104,19 @@ public class YesNo {
     }
 
     public static void animateBackgroundColorManually(final View view, final int startColor, final int endColor, final long duration) {
-        final Handler handler = new Handler(Looper.getMainLooper());
         final long startTime = System.currentTimeMillis();
 
-        handler.post(new Runnable() {
+        // Manual animation on purpose: it must run even when system animations
+        // are disabled on the device. postOnAnimation paces it at vsync
+        // instead of a busy handler loop.
+        view.postOnAnimation(new Runnable() {
             @Override
             public void run() {
                 float fraction = Math.min((float) (System.currentTimeMillis() - startTime) / duration, 1.0f);
                 view.setBackgroundColor(ColorUtils.blendARGB(startColor, endColor, fraction));
 
                 if (fraction < 1.0f) {
-                    handler.post(this);
+                    view.postOnAnimation(this);
                 }
             }
         });
