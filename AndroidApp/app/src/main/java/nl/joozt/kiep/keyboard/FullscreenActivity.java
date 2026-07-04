@@ -22,6 +22,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     private FontSize fontSize;
     private BatteryStatus batteryStatus;
     private YesNo yesNo;
+    private boolean settingsChanged = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +84,23 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        this.recreate(); // Reload everything when one of the settings has changed
+        // Font size is applied live by the hotkeys and merely persisted in
+        // onPause; recreating for it would be pointless.
+        if (!SettingsActivity.FONT_SIZE.equals(key)) {
+            settingsChanged = true;
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Reload everything once when returning from Settings, instead of
+        // recreating for every individual change while Settings was open.
+        if (settingsChanged) {
+            settingsChanged = false;
+            recreate();
+        }
     }
 
     @Override
@@ -140,6 +157,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
 
     @Override
     protected void onDestroy() {
+        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
         tts.destroy();
         batteryStatus.destroy();
         yesNo.destroy();
