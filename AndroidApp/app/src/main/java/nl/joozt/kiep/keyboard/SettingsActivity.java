@@ -34,6 +34,8 @@ public class SettingsActivity extends AppCompatActivity {
     public static final boolean ENABLE_TTS_DEFAULT = true;
     public static final String TTS_KEY = "tts_key";
     public static final String TTS_KEY_DEFAULT = "\\";
+    public static final String TTS_SPEAK_ALL_KEY = "tts_speak_all_key";
+    public static final String TTS_SPEAK_ALL_KEY_DEFAULT = "F5";
     public static final String ENABLE_YES_NO = "enable_yes_no";
     public static final boolean ENABLE_YES_NO_DEFAULT = true;
     public static final String ENABLE_HIGHLIGHT = "enable_highlight";
@@ -86,6 +88,7 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(ENABLE_HIGHLIGHT).setDependency(ENABLE_YES_NO);
             screen.findPreference(DOWNLOAD_TXT_KEY).setDependency(DOWNLOAD_TXT_URL);
             screen.findPreference(TTS_KEY).setDependency(ENABLE_TTS);
+            screen.findPreference(TTS_SPEAK_ALL_KEY).setDependency(ENABLE_TTS);
 
             preventDuplicateKeys();
         }
@@ -97,7 +100,7 @@ public class SettingsActivity extends AppCompatActivity {
          * command owns it.
          */
         private void preventDuplicateKeys() {
-            String[] keyPreferences = {DOWNLOAD_TXT_KEY, FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY, TTS_KEY};
+            String[] keyPreferences = {DOWNLOAD_TXT_KEY, FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY, TTS_KEY, TTS_SPEAK_ALL_KEY};
             for (String keyPreference : keyPreferences) {
                 ListPreference preference = findPreference(keyPreference);
                 preference.setOnPreferenceChangeListener((changed, newValue) -> {
@@ -278,6 +281,15 @@ public class SettingsActivity extends AppCompatActivity {
             speakKey.setEntryValues(functionKeys);
             speakKey.setDefaultValue(TTS_KEY_DEFAULT);
             category.addPreference(speakKey);
+
+            ListPreference speakAllKey = new ListPreference(context);
+            speakAllKey.setKey(TTS_SPEAK_ALL_KEY);
+            speakAllKey.setTitle(R.string.setting_tts_speak_all_key);
+            speakAllKey.setSummary(R.string.setting_tts_speak_all_key_description);
+            speakAllKey.setEntries(functionKeys);
+            speakAllKey.setEntryValues(functionKeys);
+            speakAllKey.setDefaultValue(TTS_SPEAK_ALL_KEY_DEFAULT);
+            category.addPreference(speakAllKey);
         }
 
         private void addBatteryStatusCategory(Context context, PreferenceScreen screen) {

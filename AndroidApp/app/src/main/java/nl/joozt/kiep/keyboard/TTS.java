@@ -17,12 +17,14 @@ public class TTS {
     private TextToSpeech textToSpeech;
     private Analytics analytics = null;
     private final String charSpeak;
+    private final String speakAllKey;
 
     public TTS(Context context, GlobalKeyPressListener keyPressListener, final EditText editText) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         boolean ttsEnabled = preferences.getBoolean(SettingsActivity.ENABLE_TTS, SettingsActivity.ENABLE_TTS_DEFAULT);
         if (!ttsEnabled) {
             charSpeak = "";
+            speakAllKey = "";
             return;
         }
 
@@ -54,10 +56,20 @@ public class TTS {
             speak(getTextToSpeak(editText));
             return true;
         });
+
+        speakAllKey = preferences.getString(SettingsActivity.TTS_SPEAK_ALL_KEY, SettingsActivity.TTS_SPEAK_ALL_KEY_DEFAULT);
+        keyPressListener.addListener(speakAllKey, () -> {
+            speak(editText.getText().toString().trim());
+            return true;
+        });
     }
 
     public String getCharSpeak() {
         return charSpeak;
+    }
+
+    public String getSpeakAllKey() {
+        return speakAllKey;
     }
 
     public void setAnalytics(Analytics analytics) {

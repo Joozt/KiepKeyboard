@@ -47,5 +47,7 @@
     <string name="setting_enable_tts_description">Tekst laten voorlezen met een sneltoets</string>
     <string name="setting_tts_key">Voorlees sneltoets</string>
     <string name="setting_tts_key_description">Gebruik de %s toets om de laatste zin voor te lezen</string>
+    <string name="setting_tts_speak_all_key">Alles voorlezen sneltoets</string>
+    <string name="setting_tts_speak_all_key_description">Gebruik de %s toets om alle tekst voor te lezen</string>
     <string name="setting_download_txt_key_description">Gebruik de %s toets om een gedownload .txt bestand te tonen</string>
 </resources>
