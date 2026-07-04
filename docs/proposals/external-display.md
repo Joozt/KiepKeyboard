@@ -1,8 +1,15 @@
 # Proposal: External display
 
-Status: Draft for review
+Status: Phase 1 implemented (2026-07-05) — pending hardware testing
 Author: (Joost)
 Date: 2026-07-05
+
+> **Implementation notes.** Built as designed. Indicator = small accent dot,
+> top-right, visible while ≥1 display is connected. `GlobalKeyPressListener`
+> now fires all listeners per key (registration order), enabling the
+> send-key = speak-key default; Settings exempts exactly that pair from
+> duplicate-key validation. Receiver firmware: `UlanziReceiver/` (PlatformIO).
+> Untested against real hardware at the time of writing.
 
 ## Background
 

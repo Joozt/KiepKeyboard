@@ -1,8 +1,14 @@
 # Proposal: Ulanzi TC001 receiver firmware
 
-Status: Draft for review
+Status: Implemented (2026-07-05) — pending hardware testing
 Author: (Joost)
 Date: 2026-07-05
+
+> **Implementation notes.** Firmware in `UlanziReceiver/` (PlatformIO,
+> NimBLE + Adafruit NeoMatrix). Middle button = replay last message (decided);
+> clear happens via disconnect/idle only. Not yet compiled/flashed against a
+> real TC001 at the time of writing — expect first-flash tweaks (matrix
+> orientation flags, buzzer loudness).
 
 Companion to [external-display.md](external-display.md) — that document owns
 the BLE protocol; this one covers the device.

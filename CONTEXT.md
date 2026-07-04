@@ -15,3 +15,7 @@ _Avoid_: document, note
 **File editor**:
 The mode that edits the File, opened with the open-file hotkey from the Notepad. Saves automatically; there is no save button.
 _Avoid_: viewer, editable mode
+
+**Display**:
+A nearby paired receiver (Ulanzi pixel clock, later a phone/tablet) that shows typed text over BLE. Never reachable via the internet.
+_Avoid_: screen (ambiguous with the phone's own), monitor

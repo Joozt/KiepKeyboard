@@ -26,6 +26,7 @@ Beyond plain typing, physical keys are repurposed as commands so the user can co
 - **Adjustable font size** — shrink/grow hotkeys (10–400 sp), remembered between sessions.
 - **Battery bar** — on-screen battery level with a configurable low-battery warning that darkens the background.
 - **File editing** — a hotkey opens a text file picked via the system file picker (e.g. straight from Dropbox); changes save automatically when leaving the editor. A read-only file opens read-only.
+- **External display** — send typed text to nearby displays over Bluetooth (never the internet): live per character, per word, per sentence, or with a send hotkey; an attention key makes displays beep and flash. First supported receiver: the Ulanzi TC001 pixel clock with the custom firmware in [`UlanziReceiver/`](UlanziReceiver/).
 - **Configurable command keys** — every command is remappable from the in-app settings, to any punctuation key or F1–F12 (plus Scroll Lock / Break).
 - **In-app settings** — a low-profile button (bottom-right, can be hidden) opens all options.
 
@@ -35,7 +36,7 @@ Beyond plain typing, physical keys are repurposed as commands so the user can co
 | --- | --- |
 | `[` | Speak the "no" sound + flash the screen red |
 | `]` | Speak the "yes" sound + flash the screen green |
-| `\` | Speak the sentence under the cursor aloud (the last sentence when typing at the end) |
+| `\` | Speak the sentence under the cursor aloud (the last sentence when typing at the end); also sends it to connected displays |
 | `F9` / `F10` | Decrease / increase the font size |
 | `F2` | Open the file for editing (shows the file picker on first use) |
 | `Backspace` | Undo the last abbreviation expansion |
