@@ -3,6 +3,7 @@ package nl.joozt.kiep.keyboard;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.TextView;
 
@@ -10,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GlobalKeyPressListener {
+    private static final String TAG = GlobalKeyPressListener.class.getSimpleName();
+
     private final Map<CharSequence, OnKeyPressListener> charListeners = new HashMap<>();
     private final Map<Integer, OnKeyPressListener> functionKeyListeners = new HashMap<>();
 
@@ -110,11 +113,15 @@ public class GlobalKeyPressListener {
             FunctionKey functionKey = FunctionKey.fromString(charSequence.toString());
             addListener(functionKey, listener);
         } catch (IllegalArgumentException e) {
-            charListeners.put(charSequence, listener);
+            if (charListeners.put(charSequence, listener) != null) {
+                Log.w(TAG, "Duplicate command key registration, last one wins: " + charSequence);
+            }
         }
     }
 
     public void addListener(FunctionKey functionKey, OnKeyPressListener listener) {
-        functionKeyListeners.put(functionKey.keyCode, listener);
+        if (functionKeyListeners.put(functionKey.keyCode, listener) != null) {
+            Log.w(TAG, "Duplicate command key registration, last one wins: " + functionKey);
+        }
     }
 }

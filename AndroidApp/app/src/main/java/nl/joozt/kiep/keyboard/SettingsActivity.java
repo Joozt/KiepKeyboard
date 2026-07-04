@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -79,6 +80,45 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(YES_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(ENABLE_HIGHLIGHT).setDependency(ENABLE_YES_NO);
             screen.findPreference(DOWNLOAD_TXT_KEY).setDependency(DOWNLOAD_TXT_URL);
+
+            preventDuplicateKeys();
+        }
+
+        /**
+         * All command-key preferences pick from the same key list; two commands
+         * on the same key would silently break one of them (last registration
+         * wins). Reject a pick that is already in use and tell the user which
+         * command owns it.
+         */
+        private void preventDuplicateKeys() {
+            String[] keyPreferences = {DOWNLOAD_TXT_KEY, FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY};
+            for (String keyPreference : keyPreferences) {
+                ListPreference preference = findPreference(keyPreference);
+                preference.setOnPreferenceChangeListener((changed, newValue) -> {
+                    CharSequence owner = ownerOfKey((String) newValue, changed.getKey(), keyPreferences);
+                    if (owner != null) {
+                        Toast.makeText(requireContext(), getString(R.string.key_already_used, newValue, owner), Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                    return true;
+                });
+            }
+        }
+
+        private CharSequence ownerOfKey(String newValue, String changedPreference, String[] keyPreferences) {
+            if (TTS.CHAR_SPEAK.equals(newValue)) {
+                return getString(R.string.function_text_to_speech);
+            }
+            for (String keyPreference : keyPreferences) {
+                if (keyPreference.equals(changedPreference)) {
+                    continue;
+                }
+                ListPreference other = findPreference(keyPreference);
+                if (newValue.equals(other.getValue())) {
+                    return other.getTitle();
+                }
+            }
+            return null;
         }
 
         private void addPlayStoreListing(final Context context, PreferenceScreen screen) {

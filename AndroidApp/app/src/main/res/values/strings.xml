@@ -42,5 +42,7 @@
     <string name="setting_download_txt_url">The URL to a .txt file</string>
     <string name="setting_download_txt_url_description">For example a shared link from Dropbox</string>
     <string name="setting_download_txt_key">Download .txt file hotkey</string>
+    <string name="key_already_used">%1$s is already used by %2$s</string>
+    <string name="function_text_to_speech">Text-to-speech</string>
     <string name="setting_download_txt_key_description">Use the %s key show a downloaded .txt file</string>
 </resources>

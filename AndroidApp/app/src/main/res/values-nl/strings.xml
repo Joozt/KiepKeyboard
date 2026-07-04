@@ -42,5 +42,7 @@
     <string name="setting_download_txt_url">De URL naar een .txt bestand</string>
     <string name="setting_download_txt_url_description">Bijvoorbeeld een gedeelde link uit Dropbox</string>
     <string name="setting_download_txt_key">Download .txt bestand sneltoets</string>
+    <string name="key_already_used">%1$s wordt al gebruikt door %2$s</string>
+    <string name="function_text_to_speech">Tekst-naar-spraak</string>
     <string name="setting_download_txt_key_description">Gebruik de %s toets om een gedownload .txt bestand te tonen</string>
 </resources>
