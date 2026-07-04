@@ -1,6 +1,6 @@
 # KiepKeyboard
 [![Build debug APK](https://github.com/Joozt/KiepKeyboard/actions/workflows/android.yml/badge.svg)](https://github.com/Joozt/KiepKeyboard/actions/workflows/android.yml)
-[![Build release APK](https://github.com/Joozt/KiepKeyboard/actions/workflows/publish.yml/badge.svg)](https://github.com/Joozt/KiepKeyboard/actions/workflows/publish.yml)
+[![Build release AAB](https://github.com/Joozt/KiepKeyboard/actions/workflows/publish.yml/badge.svg)](https://github.com/Joozt/KiepKeyboard/actions/workflows/publish.yml)
 
 Fullscreen typing Android app for hardware USB keyboard. Designed as lightweight portable communication setup for disabled people.
 
@@ -41,6 +41,15 @@ Beyond plain typing, physical keys are repurposed as commands so the user can co
 | `Backspace` | Undo the last abbreviation expansion |
 
 All keys are reconfigurable in Settings, and the yes/no, text-to-speech, battery bar, and .txt-download features can each be turned on or off. An abbreviation expands when you finish a word with a space, a newline, or one of `. , ? ! : ;`.
+
+## Lock the phone to the app
+
+A hardware keyboard's Esc/Back key exits the app instantly, which can strand the user on the Android launcher. Enable **app pinning** once per device so a stray keypress cannot leave KiepKeyboard:
+
+1. Settings → Security → More security settings → **App pinning** (naming varies per Android version) → enable, and turn on "Ask for PIN before unpinning".
+2. Open KiepKeyboard, open the recent-apps view, tap the app icon above the preview and choose **Pin**.
+
+Unpinning (for the caregiver): hold Back + Recents (or swipe up and hold), then enter the device PIN.
 
 ## Hardware
 [RL-K7 keyboard](https://www.aliexpress.com/item/4000336069065.html) with laser-cut acrylic glass grid frame overlay for typing support. The grid frame has an integrated phone stand. The keyboard has a modified cable; a short micro-USB OTG cable.
