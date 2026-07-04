@@ -14,6 +14,8 @@ import androidx.preference.PreferenceManager;
 
 public class FullscreenActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final String KIEP_KEYBOARD = "KiepKeyboard";
+    private static final String TEXT = "Text";
+    private static final String HAS_SAVED_TEXT = "HasSavedText";
     private EditText editText;
     private TTS tts;
     private UpdateCheck updateCheck;
@@ -109,19 +111,19 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
 
         // Get preferences with previously stored information
         SharedPreferences settings = getSharedPreferences(KIEP_KEYBOARD, Context.MODE_PRIVATE);
-        String text = settings.getString("Text", KIEP_KEYBOARD);
+        String text = settings.getString(TEXT, getString(R.string.app_name));
 
         // Set the text back in the editor
         editText.setText(text);
 
-        if (text.equals(KIEP_KEYBOARD)) {
-
-            // If default text, select all and overwrite when start typing
-            editText.selectAll();
-        } else {
+        if (settings.getBoolean(HAS_SAVED_TEXT, false)) {
 
             // Set the cursor to the end
             editText.setSelection(editText.getText().length());
+        } else {
+
+            // First run: show the default text selected so typing replaces it
+            editText.selectAll();
         }
         editText.requestFocus();
 
@@ -147,7 +149,8 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         SharedPreferences.Editor editor = settings.edit();
 
         // Store the result in the preferences
-        editor.putString("Text", editText.getText().toString());
+        editor.putString(TEXT, editText.getText().toString());
+        editor.putBoolean(HAS_SAVED_TEXT, true);
         editor.apply();
     }
 

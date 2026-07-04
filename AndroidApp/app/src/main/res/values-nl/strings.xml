@@ -8,7 +8,6 @@
 
     <string name="unable_to_download">Kan niet downloaden (offline?)</string>
     <string name="failed_request">Download mislukt</string>
-    <string name="no_data">Geen gegevens gedownload</string>
     <string name="showing_downloaded">Toont gedownload bestand</string>
     <string name="downloading">Bezig met downloaden</string>
 

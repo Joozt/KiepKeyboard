@@ -8,7 +8,6 @@
 
     <string name="unable_to_download">Unable to download (offline?)</string>
     <string name="failed_request">Failed download request</string>
-    <string name="no_data">No data downloaded</string>
     <string name="showing_downloaded">Showing downloaded file</string>
     <string name="downloading">Downloading</string>
 
@@ -44,5 +43,5 @@
     <string name="setting_download_txt_key">Download .txt file hotkey</string>
     <string name="key_already_used">%1$s is already used by %2$s</string>
     <string name="function_text_to_speech">Text-to-speech</string>
-    <string name="setting_download_txt_key_description">Use the %s key show a downloaded .txt file</string>
+    <string name="setting_download_txt_key_description">Use the %s key to show a downloaded .txt file</string>
 </resources>
