@@ -19,6 +19,7 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.StringRes;
@@ -150,28 +151,78 @@ public class FileEditorActivity extends AppCompatActivity {
             }
         });
 
-        String uriString = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString(SettingsActivity.FILE_URI, SettingsActivity.FILE_URI_DEFAULT);
-        if (uriString.isEmpty()) {
-            filePicker.launch(new String[]{"text/*"});
-        } else {
-            uri = Uri.parse(uriString);
+        // Back/Esc always leads to the Notepad, also when the editor was
+        // opened straight from another app ("Open with...")
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                openNotepadIfTaskRoot();
+                finish();
+            }
+        });
+
+        if (adoptIntentFile(getIntent())) {
             loadFile();
+        } else {
+            String uriString = PreferenceManager.getDefaultSharedPreferences(this)
+                    .getString(SettingsActivity.FILE_URI, SettingsActivity.FILE_URI_DEFAULT);
+            if (uriString.isEmpty()) {
+                filePicker.launch(new String[]{"text/*"});
+            } else {
+                uri = Uri.parse(uriString);
+                loadFile();
+            }
         }
 
         handler.postDelayed(safetySaveRunnable, SAFETY_SAVE_INTERVAL_MS);
+    }
+
+    /**
+     * Adopts a file handed over by another app ("Open with..." from Dropbox
+     * etc.) as the File from now on. The permission grant is persisted when
+     * the sender allows it; otherwise it lasts for this session and a later
+     * failing load falls back to the picker flow.
+     */
+    private boolean adoptIntentFile(Intent intent) {
+        Uri data = intent.getData();
+        if (data == null) {
+            return false;
+        }
+        try {
+            getContentResolver().takePersistableUriPermission(data,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        } catch (SecurityException e) {
+            Log.w(TAG, "Permission for the shared file is not persistable", e);
+        }
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putString(SettingsActivity.FILE_URI, data.toString())
+                .apply();
+        uri = data;
+        return true;
+    }
+
+    private void openNotepadIfTaskRoot() {
+        if (isTaskRoot()) {
+            startActivity(new Intent(this, FullscreenActivity.class));
+        }
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
+        // Save the current File before another one arrives via "Open with..."
+        saveFile();
+        if (adoptIntentFile(intent)) {
+            loadFile();
+            return;
+        }
+
         // The File may have been switched in Settings while this (singleTask)
         // instance was alive
         String uriString = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString(SettingsActivity.FILE_URI, SettingsActivity.FILE_URI_DEFAULT);
         if (!uriString.isEmpty() && (uri == null || !uriString.equals(uri.toString()))) {
-            saveFile();
             uri = Uri.parse(uriString);
             loadFile();
         }
@@ -240,6 +291,7 @@ public class FileEditorActivity extends AppCompatActivity {
                 Log.e(TAG, "Unable to load file", e);
                 handler.post(() -> {
                     Toast.makeText(this, R.string.file_load_failed, Toast.LENGTH_LONG).show();
+                    openNotepadIfTaskRoot();
                     finish();
                 });
             }
