@@ -47,7 +47,6 @@ android {
 }
 
 dependencies {
-    implementation(libs.okhttp)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.preference)
     implementation(libs.play.services.measurement.api)

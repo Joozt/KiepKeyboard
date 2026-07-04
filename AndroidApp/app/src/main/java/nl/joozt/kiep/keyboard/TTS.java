@@ -59,7 +59,7 @@ public class TTS {
         return speakKey;
     }
 
-    public String getSpeakAllKey() {
+public String getSpeakAllKey() {
         return speakAllKey;
     }
 

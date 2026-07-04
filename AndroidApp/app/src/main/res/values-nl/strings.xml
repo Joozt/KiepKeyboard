@@ -6,10 +6,6 @@
     <string name="update_ready">Update is gereed om te installeren</string>
     <string name="update_restart">OPNIEUW STARTEN</string>
 
-    <string name="unable_to_download">Kan niet downloaden (offline?)</string>
-    <string name="failed_request">Download mislukt</string>
-    <string name="showing_downloaded">Toont gedownload bestand</string>
-    <string name="downloading">Bezig met downloaden</string>
 
     <string name="setting_open_play_store_listing">Open Play Store pagina</string>
     <string name="setting_open_play_store_listing_description">Open de pagina van deze app in de Google Play Store</string>
@@ -47,10 +43,6 @@
     <string name="no_file_chosen">Geen bestand gekozen</string>
     <string name="setting_open_file_key">Open bestand sneltoets</string>
     <string name="setting_open_file_key_description">Gebruik de %s toets om het bestand te openen</string>
-    <string name="setting_download_txt">Download en toon een .txt bestand (alleen lezen)</string>
-    <string name="setting_download_txt_url">De URL naar een .txt bestand</string>
-    <string name="setting_download_txt_url_description">Bijvoorbeeld een gedeelde link uit Dropbox</string>
-    <string name="setting_download_txt_key">Download .txt bestand sneltoets</string>
     <string name="key_already_used">%1$s wordt al gebruikt door %2$s</string>
     <string name="setting_tts">Tekst-naar-spraak</string>
     <string name="setting_enable_tts">Tekst-naar-spraak inschakelen</string>
@@ -62,5 +54,4 @@
     <string name="setting_tts_speak_all_key_description">Gebruik de %s toets om alle tekst voor te lezen</string>
     <string name="setting_tts_rate">Spreeksnelheid (%)</string>
     <string name="setting_tts_pitch">Toonhoogte (%)</string>
-    <string name="setting_download_txt_key_description">Gebruik de %s toets om een gedownload .txt bestand te tonen</string>
 </resources>

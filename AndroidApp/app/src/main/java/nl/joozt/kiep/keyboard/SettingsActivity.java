@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -30,10 +29,6 @@ public class SettingsActivity extends AppCompatActivity {
     public static final boolean ENABLE_SETTINGS_BUTTON_DEFAULT = true;
     public static final String ABBREVIATIONS = "abbreviations";
     public static final String ABBREVIATIONS_DEFAULT = "::kkb::KiepKeyboard";
-    public static final String DOWNLOAD_TXT_URL = "download_txt_url";
-    public static final String DOWNLOAD_TXT_URL_DEFAULT = "";
-    public static final String DOWNLOAD_TXT_KEY = "download_txt_key";
-    public static final String DOWNLOAD_TXT_KEY_DEFAULT = "F2";
     public static final String ENABLE_TTS = "enable_tts";
     public static final boolean ENABLE_TTS_DEFAULT = true;
     public static final String TTS_KEY = "tts_key";
@@ -103,7 +98,6 @@ public class SettingsActivity extends AppCompatActivity {
             addPlayStoreListing(context, screen);
             addSettingsButton(context, screen);
             addAbbreviations(context, screen);
-            addDownloadTxtCategory(context, screen);
             addFontSizeCategory(context, screen);
             addYesNoCategory(context, screen);
             addTtsCategory(context, screen);
@@ -115,7 +109,6 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(NO_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(YES_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(ENABLE_HIGHLIGHT).setDependency(ENABLE_YES_NO);
-            screen.findPreference(DOWNLOAD_TXT_KEY).setDependency(DOWNLOAD_TXT_URL);
             screen.findPreference(TTS_KEY).setDependency(ENABLE_TTS);
             screen.findPreference(TTS_SPEAK_ALL_KEY).setDependency(ENABLE_TTS);
             screen.findPreference(TTS_RATE).setDependency(ENABLE_TTS);
@@ -131,7 +124,7 @@ public class SettingsActivity extends AppCompatActivity {
          * command owns it.
          */
         private void preventDuplicateKeys() {
-            String[] keyPreferences = {DOWNLOAD_TXT_KEY, FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY, TTS_KEY, TTS_SPEAK_ALL_KEY, OPEN_FILE_KEY};
+            String[] keyPreferences = {FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY, TTS_KEY, TTS_SPEAK_ALL_KEY, OPEN_FILE_KEY};
             for (String keyPreference : keyPreferences) {
                 ListPreference preference = findPreference(keyPreference);
                 preference.setOnPreferenceChangeListener((changed, newValue) -> {
@@ -191,30 +184,6 @@ public class SettingsActivity extends AppCompatActivity {
             abbreviations.setDefaultValue(ABBREVIATIONS_DEFAULT);
             abbreviations.setOnBindEditTextListener(editText -> editText.setLines(5));
             screen.addPreference(abbreviations);
-        }
-
-        private void addDownloadTxtCategory(Context context, PreferenceScreen screen) {
-            PreferenceCategory category = new PreferenceCategory(context);
-            category.setKey("download_txt");
-            category.setTitle(R.string.setting_download_txt);
-            screen.addPreference(category);
-
-            EditTextPreference url = new EditTextPreference(context);
-            url.setKey(DOWNLOAD_TXT_URL);
-            url.setTitle(R.string.setting_download_txt_url);
-            url.setSummary(R.string.setting_download_txt_url_description);
-            url.setDefaultValue(DOWNLOAD_TXT_URL_DEFAULT);
-            url.setOnBindEditTextListener(TextView::setSingleLine);
-            category.addPreference(url);
-
-            ListPreference key = new ListPreference(context);
-            key.setKey(DOWNLOAD_TXT_KEY);
-            key.setTitle(R.string.setting_download_txt_key);
-            key.setSummary(R.string.setting_download_txt_key_description);
-            key.setEntries(functionKeys);
-            key.setEntryValues(functionKeys);
-            key.setDefaultValue(DOWNLOAD_TXT_KEY_DEFAULT);
-            category.addPreference(key);
         }
 
         private void addFontSizeCategory(Context context, PreferenceScreen screen) {
