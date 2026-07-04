@@ -301,9 +301,9 @@ public class SettingsActivity extends AppCompatActivity {
             rate.setKey(TTS_RATE);
             rate.setTitle(R.string.setting_tts_rate);
             rate.setDefaultValue(TTS_RATE_DEFAULT);
-            rate.setSeekBarIncrement(25);
+            rate.setSeekBarIncrement(5);
             rate.setMin(25);
-            rate.setMax(300);
+            rate.setMax(120);
             rate.setShowSeekBarValue(true);
             category.addPreference(rate);
 
