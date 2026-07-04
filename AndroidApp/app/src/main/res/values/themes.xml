@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.KiepKeyboard" parent="Theme.Material3.DayNight.NoActionBar" />
+    <style name="Theme.KiepKeyboard" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- App accent is the same blue as the battery bar (colorAccent),
+             instead of the Material3 baseline purple -->
+        <item name="colorPrimary">@color/colorAccent</item>
+        <item name="colorOnPrimary">@android:color/black</item>
+        <item name="colorPrimaryContainer">@color/colorAccent</item>
+        <item name="colorOnPrimaryContainer">@android:color/black</item>
+    </style>
 
     <style name="Theme.KiepKeyboard.Fullscreen">
         <item name="android:windowBackground">@null</item>
