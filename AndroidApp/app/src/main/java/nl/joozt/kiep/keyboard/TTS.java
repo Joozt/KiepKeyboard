@@ -110,53 +110,47 @@ public class TTS {
     }
 
     private String getTextToSpeak(EditText editText) {
-        return lastSentence(editText.getText().toString());
+        return sentenceAt(editText.getText().toString(), editText.getSelectionStart());
     }
 
     /**
-     * Returns the last sentence of the buffer: the text after the last
-     * '.', '!' or '?' (ignoring one trailing terminator), or the whole
-     * trimmed buffer when it contains no terminator.
+     * Returns the last sentence of the buffer. Sentences end with '.', '!',
+     * '?' or a newline.
      */
     static String lastSentence(String text) {
-        // Trim leading / trailing spaces
-        String complete_text = text.trim();
+        return sentenceAt(text, text.length());
+    }
 
-        // Nothing to speak on an empty buffer (charAt below would crash)
-        if (complete_text.isEmpty()) {
-            return "";
+    /**
+     * Returns the sentence under the cursor, trimmed. A cursor at the end of
+     * a sentence (possibly behind its terminator or trailing whitespace)
+     * means that sentence, so a cursor at the end of the buffer yields the
+     * last sentence.
+     */
+    static String sentenceAt(String text, int cursor) {
+        int position = (cursor < 0 || cursor > text.length()) ? text.length() : cursor;
+
+        // Step back over whitespace (covers trailing newlines) and one
+        // sentence terminator, so "end of sentence." means that sentence
+        while (position > 0 && Character.isWhitespace(text.charAt(position - 1))) {
+            position--;
+        }
+        if (position > 0 && isTerminator(text.charAt(position - 1))) {
+            position--;
         }
 
-        // Remove the last character if it is dot, ! or ?
-        if (complete_text.charAt(complete_text.length() - 1) == '.' || complete_text.charAt(complete_text.length() - 1) == '!' || complete_text.charAt(complete_text.length() - 1) == '?') {
-            complete_text = complete_text.substring(0, complete_text.length() - 1);
+        int start = position;
+        while (start > 0 && !isTerminator(text.charAt(start - 1))) {
+            start--;
         }
+        int end = position;
+        while (end < text.length() && !isTerminator(text.charAt(end))) {
+            end++;
+        }
+        return text.substring(start, end).trim();
+    }
 
-        // Search for line ending characters, like dot, ! or ?
-        String last_sentence_dot = complete_text.substring(complete_text.lastIndexOf(".") + 1);
-        String last_sentence_expl = complete_text.substring(complete_text.lastIndexOf("!") + 1);
-        String last_sentence_ques = complete_text.substring(complete_text.lastIndexOf("?") + 1);
-
-        // Check for the shortest string length and play that case
-        int length_tot = complete_text.length();
-        int length_dot = last_sentence_dot.length();
-        int length_expl = last_sentence_expl.length();
-        int length_ques = last_sentence_ques.length();
-
-        // Check the minimal length
-        if (length_dot < length_expl && length_dot < length_ques && length_dot < length_tot)
-            // Speak last_sentence_dot
-            return last_sentence_dot;
-        if (length_expl < length_dot && length_expl < length_ques && length_expl < length_tot)
-            // Speak last_sentence_expl
-            return last_sentence_expl;
-        if (length_ques < length_dot && length_ques < length_expl && length_ques < length_tot)
-            // Speak last_sentence_ques
-            return last_sentence_ques;
-        if (length_tot <= length_dot && length_tot <= length_expl && length_tot <= length_ques)
-            // Speak the total buffer
-            return complete_text;
-
-        return "";
+    private static boolean isTerminator(char character) {
+        return character == '.' || character == '!' || character == '?' || character == '\n';
     }
 }

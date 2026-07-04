@@ -21,7 +21,7 @@ Beyond plain typing, physical keys are repurposed as commands so the user can co
 
 - **Distraction-free fullscreen editor** — immersive landscape, no system bars; typed text is restored after the app is backgrounded.
 - **Yes / No** — dedicated keys play a yes/no sound and briefly flash the screen green/red (the flash can be disabled).
-- **Text-to-speech** — speaks the last sentence in the buffer (the text after the last `.`, `!`, or `?`) or the whole text, in the device language; speech rate and pitch are adjustable, and the feature can be turned off.
+- **Text-to-speech** — speaks the sentence under the cursor (sentences end at `.`, `!`, `?`, or a new line; with the cursor at the end that's the last sentence) or the whole text, in the device language; speech rate and pitch are adjustable, and the feature can be turned off.
 - **Abbreviation expansion** — AutoHotKey-style snippets (e.g. `::kkb::KiepKeyboard`) expand as you type; Backspace undoes the last expansion.
 - **Adjustable font size** — shrink/grow hotkeys (10–400 sp), remembered between sessions.
 - **Battery bar** — on-screen battery level with a configurable low-battery warning that darkens the background.
@@ -35,7 +35,7 @@ Beyond plain typing, physical keys are repurposed as commands so the user can co
 | --- | --- |
 | `[` | Speak the "no" sound + flash the screen red |
 | `]` | Speak the "yes" sound + flash the screen green |
-| `\` | Speak the last sentence aloud (text-to-speech) |
+| `\` | Speak the sentence under the cursor aloud (the last sentence when typing at the end) |
 | `F9` / `F10` | Decrease / increase the font size |
 | `F2` | Download and show the configured `.txt` file (only if a URL is set) |
 | `Backspace` | Undo the last abbreviation expansion |

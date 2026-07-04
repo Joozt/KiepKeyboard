@@ -37,7 +37,7 @@ The keyboard-as-command-bus is the core abstraction. `GlobalKeyPressListener` (c
 Feature classes each take `(Context, GlobalKeyPressListener, EditText)` and register their own listeners in their constructor:
 
 - `YesNo` — plays yes/no `.wav` (from `res/raw`) and flashes the background green/red. Animation is done manually with a `Handler` loop (`animateBackgroundColorManually`) so it runs even when system animations are disabled.
-- `TTS` — speaks the *last sentence* of the buffer (splits on `.`/`!`/`?`, picks shortest trailing segment).
+- `TTS` — speaks the *sentence under the cursor* (`sentenceAt`; sentences end at `.`/`!`/`?`/newline, cursor at the end yields the last sentence); a second optional hotkey speaks the whole buffer.
 - `Abbreviations` — expands `::abbr::expansion` snippets when an end-char is typed; Backspace undoes the last expansion (`UndoInfo`).
 - `FontSize` — increment/decrement keys resize text; size persisted to prefs in `onPause`/`saveCurrentFontSize`.
 - `BatteryStatus` — registers an `ACTION_BATTERY_CHANGED` receiver, drives the `ProgressBar`, tints/darkens on low battery.
