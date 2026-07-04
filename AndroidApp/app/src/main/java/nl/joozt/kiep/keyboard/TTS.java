@@ -87,6 +87,11 @@ public class TTS {
         String complete_text = editText.getText().toString();
         complete_text = complete_text.trim();
 
+        // Nothing to speak on an empty buffer (charAt below would crash)
+        if (complete_text.isEmpty()) {
+            return "";
+        }
+
         // Remove the last character if it is dot, ! or ?
         if (complete_text.charAt(complete_text.length() - 1) == '.' || complete_text.charAt(complete_text.length() - 1) == '!' || complete_text.charAt(complete_text.length() - 1) == '?') {
             complete_text = complete_text.substring(0, complete_text.length() - 1);
