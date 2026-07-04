@@ -44,7 +44,7 @@ public class YesNo {
         keyPressListener.addListener(noKey, () -> {
             playSound(noSoundId);
             if (highlightEnabled) {
-                highlightBackground(Color.parseColor("#be0000"));
+                highlightBackground(context.getColor(R.color.no_red));
             }
             if (analytics != null) {
                 analytics.logNo();
@@ -56,7 +56,7 @@ public class YesNo {
         keyPressListener.addListener(yesKey, () -> {
             playSound(yesSoundId);
             if (highlightEnabled) {
-                highlightBackground(Color.parseColor("#009800"));
+                highlightBackground(context.getColor(R.color.yes_green));
             }
             if (analytics != null) {
                 analytics.logYes();

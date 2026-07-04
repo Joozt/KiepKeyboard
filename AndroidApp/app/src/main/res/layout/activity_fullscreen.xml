@@ -4,7 +4,7 @@
     android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
+    android:background="@android:color/black"
     tools:context=".FullscreenActivity">
 
     <EditText
@@ -20,7 +20,7 @@
         android:inputType="textCapSentences|textMultiLine"
         android:padding="20dp"
         android:text="@string/app_name"
-        android:textColor="#FFFFFF"
+        android:textColor="@android:color/white"
         android:textSize="100sp"
         tools:ignore="LabelFor" />
 

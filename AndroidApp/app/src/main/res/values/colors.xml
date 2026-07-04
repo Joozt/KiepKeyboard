@@ -5,4 +5,9 @@
     <color name="colorAccent">#ff33b5e5</color>
 
     <color name="black_overlay">#66000000</color>
+
+    <color name="yes_green">#009800</color>
+    <color name="no_red">#be0000</color>
+    <color name="battery_low">#FFC107</color>
+    <color name="background_low_battery">#493700</color>
 </resources>

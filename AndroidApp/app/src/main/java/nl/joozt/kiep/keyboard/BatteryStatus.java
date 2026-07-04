@@ -42,14 +42,14 @@ public class BatteryStatus {
                 progressBar.setProgress(level);
 
                 if (level <= lowBatLevel) {
-                    progressBar.setProgressTintList(ColorStateList.valueOf(Color.parseColor("#FFC107")));
+                    progressBar.setProgressTintList(ColorStateList.valueOf(context.getColor(R.color.battery_low)));
 
                     if (lowBatWarningEnabled) {
-                        background.setBackgroundColor((Color.parseColor("#493700")));
+                        background.setBackgroundColor(context.getColor(R.color.background_low_battery));
                     }
                 } else {
-                    progressBar.setProgressTintList(ColorStateList.valueOf(Color.parseColor("#33B5E5")));
-                    background.setBackgroundColor((Color.BLACK));
+                    progressBar.setProgressTintList(ColorStateList.valueOf(context.getColor(R.color.colorAccent)));
+                    background.setBackgroundColor(Color.BLACK);
                 }
             }
         };
