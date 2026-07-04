@@ -83,9 +83,17 @@ public class TTS {
     }
 
     private String getTextToSpeak(EditText editText) {
-        // Get the total text from the edit box and trim leading / trailing spaces
-        String complete_text = editText.getText().toString();
-        complete_text = complete_text.trim();
+        return lastSentence(editText.getText().toString());
+    }
+
+    /**
+     * Returns the last sentence of the buffer: the text after the last
+     * '.', '!' or '?' (ignoring one trailing terminator), or the whole
+     * trimmed buffer when it contains no terminator.
+     */
+    static String lastSentence(String text) {
+        // Trim leading / trailing spaces
+        String complete_text = text.trim();
 
         // Nothing to speak on an empty buffer (charAt below would crash)
         if (complete_text.isEmpty()) {

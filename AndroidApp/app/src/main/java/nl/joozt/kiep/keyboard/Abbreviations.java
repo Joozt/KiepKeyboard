@@ -18,7 +18,7 @@ import static nl.joozt.kiep.keyboard.GlobalKeyPressListener.FunctionKey.BACKSPAC
 
 public class Abbreviations implements TextWatcher {
     private static final String END_CHARS = " .,\n?!:;";
-    private final Map<String, String> abbreviations = new HashMap<>();
+    private final Map<String, String> abbreviations;
     private final EditText editText;
     private UndoInfo undoInfo = null;
 
@@ -26,12 +26,7 @@ public class Abbreviations implements TextWatcher {
         this.editText = editText;
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String abbreviationsString = preferences.getString(SettingsActivity.ABBREVIATIONS, SettingsActivity.ABBREVIATIONS_DEFAULT);
-
-        Matcher matcher = Pattern.compile("::(\\w+?)::(.+)").matcher(abbreviationsString);
-        while (matcher.find()) {
-            abbreviations.put(Objects.requireNonNull(matcher.group(1)).toLowerCase(), Objects.requireNonNull(matcher.group(2)).trim());
-        }
+        abbreviations = parse(preferences.getString(SettingsActivity.ABBREVIATIONS, SettingsActivity.ABBREVIATIONS_DEFAULT));
 
         if (!abbreviations.isEmpty()) {
             this.editText.addTextChangedListener(this);
@@ -39,13 +34,27 @@ public class Abbreviations implements TextWatcher {
         }
     }
 
-    @Override
-    public void afterTextChanged(Editable s) {
-        String text = s.toString();
-        undoInfo = null;
+    /**
+     * Parses AutoHotKey-style "::abbr::expansion" lines (one per line) into a
+     * lookup map with lowercased abbreviation keys.
+     */
+    static Map<String, String> parse(String abbreviationsString) {
+        Map<String, String> abbreviations = new HashMap<>();
+        Matcher matcher = Pattern.compile("::(\\w+?)::(.+)").matcher(abbreviationsString);
+        while (matcher.find()) {
+            abbreviations.put(Objects.requireNonNull(matcher.group(1)).toLowerCase(), Objects.requireNonNull(matcher.group(2)).trim());
+        }
+        return abbreviations;
+    }
 
+    /**
+     * Decides whether the text ends with a just-completed abbreviation (a
+     * known word followed by an end character) and returns what to replace,
+     * or null when nothing applies.
+     */
+    static Expansion findExpansion(String text, Map<String, String> abbreviations) {
         if (!endsWithEndChar(text)) {
-            return;
+            return null;
         }
 
         String trimmedText = text.substring(0, text.length() - 1);
@@ -54,20 +63,31 @@ public class Abbreviations implements TextWatcher {
         int indexOfLastWord = Math.max(indexOfLastSpace, indexOfLastEnter) + 1;
         String lastWord = trimmedText.substring(indexOfLastWord);
         String replacement = abbreviations.get(lastWord.toLowerCase());
-        if (replacement != null) {
-            editText.removeTextChangedListener(this);
-            s.replace(indexOfLastWord, indexOfLastWord + lastWord.length(), replacement);
-            undoInfo = new UndoInfo(indexOfLastWord, indexOfLastWord + replacement.length(), lastWord);
-            editText.addTextChangedListener(this);
+        if (replacement == null) {
+            return null;
         }
+        return new Expansion(indexOfLastWord, indexOfLastWord + lastWord.length(), lastWord, replacement);
     }
 
-    private boolean endsWithEndChar(String text) {
+    private static boolean endsWithEndChar(String text) {
         if (text == null || text.trim().isEmpty()) {
             return false;
         }
         String lastChar = text.substring(text.length() - 1);
         return END_CHARS.contains(lastChar);
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        undoInfo = null;
+
+        Expansion expansion = findExpansion(s.toString(), abbreviations);
+        if (expansion != null) {
+            editText.removeTextChangedListener(this);
+            s.replace(expansion.start, expansion.end, expansion.replacement);
+            undoInfo = new UndoInfo(expansion.start, expansion.start + expansion.replacement.length(), expansion.originalWord);
+            editText.addTextChangedListener(this);
+        }
     }
 
     private boolean undo(EditText editText) {
@@ -80,6 +100,20 @@ public class Abbreviations implements TextWatcher {
         undoInfo = null;
         editText.addTextChangedListener(this);
         return true;
+    }
+
+    static class Expansion {
+        final int start;
+        final int end;
+        final String originalWord;
+        final String replacement;
+
+        Expansion(int start, int end, String originalWord, String replacement) {
+            this.start = start;
+            this.end = end;
+            this.originalWord = originalWord;
+            this.replacement = replacement;
+        }
     }
 
     private static class UndoInfo {
