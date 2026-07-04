@@ -25,7 +25,7 @@ Beyond plain typing, physical keys are repurposed as commands so the user can co
 - **Abbreviation expansion** — AutoHotKey-style snippets (e.g. `::kkb::KiepKeyboard`) expand as you type; Backspace undoes the last expansion.
 - **Adjustable font size** — shrink/grow hotkeys (10–400 sp), remembered between sessions.
 - **Battery bar** — on-screen battery level with a configurable low-battery warning that darkens the background.
-- **Read-only .txt viewer** — a hotkey downloads a text file from a URL (e.g. a Dropbox share link) and shows it read-only.
+- **File editing** — a hotkey opens a text file picked via the system file picker (e.g. straight from Dropbox); changes save automatically when leaving the editor. A read-only file opens read-only.
 - **Configurable command keys** — every command is remappable from the in-app settings, to any punctuation key or F1–F12 (plus Scroll Lock / Break).
 - **In-app settings** — a low-profile button (bottom-right, can be hidden) opens all options.
 
@@ -37,10 +37,10 @@ Beyond plain typing, physical keys are repurposed as commands so the user can co
 | `]` | Speak the "yes" sound + flash the screen green |
 | `\` | Speak the sentence under the cursor aloud (the last sentence when typing at the end) |
 | `F9` / `F10` | Decrease / increase the font size |
-| `F2` | Download and show the configured `.txt` file (only if a URL is set) |
+| `F2` | Open the file for editing (shows the file picker on first use) |
 | `Backspace` | Undo the last abbreviation expansion |
 
-All keys are reconfigurable in Settings, and the yes/no, text-to-speech, battery bar, and .txt-download features can each be turned on or off. An abbreviation expands when you finish a word with a space, a newline, or one of `. , ? ! : ;`.
+All keys are reconfigurable in Settings, and the yes/no, text-to-speech, and battery bar features can each be turned on or off. An abbreviation expands when you finish a word with a space, a newline, or one of `. , ? ! : ;`.
 
 ## Lock the phone to the app
 

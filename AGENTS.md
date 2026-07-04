@@ -41,7 +41,7 @@ Feature classes each take `(Context, GlobalKeyPressListener, EditText)` and regi
 - `Abbreviations` — expands `::abbr::expansion` snippets when an end-char is typed; Backspace undoes the last expansion (`UndoInfo`).
 - `FontSize` — increment/decrement keys resize text; size persisted to prefs in `onPause`/`saveCurrentFontSize`.
 - `BatteryStatus` — registers an `ACTION_BATTERY_CHANGED` receiver, drives the `ProgressBar`, tints/darkens on low battery.
-- `ReadTxtFileActivity` — separate activity launched by a configurable key; downloads a text file (OkHttp) and shows it read-only, with an `InputFilter` that still lets the yes/no, TTS, and font keys through.
+- `FileEditorActivity` — separate activity launched by a configurable key (default F2); edits one SAF-picked text file (the **File**) with all Notepad features active. File writes are deliberately sparse (`onPause` + a 5-minute safety timer) to avoid Dropbox "conflicted copy" files; durability between writes comes from a local SharedPreferences mirror. Read-only files get an `InputFilter` that still lets the command keys through. See `docs/proposals/editable-files.md` and `CONTEXT.md` for terminology (Notepad / File / File editor).
 - `UpdateCheck` — Play in-app flexible updates.
 - `Analytics` — thin Firebase wrapper (logs yes/no/tts events).
 
@@ -49,4 +49,4 @@ Feature classes each take `(Context, GlobalKeyPressListener, EditText)` and regi
 
 **Reactivity.** `FullscreenActivity` implements `OnSharedPreferenceChangeListener`, sets a dirty flag on changes, and recreates **once in `onStart()`** when returning from Settings (`FONT_SIZE` is exempt — the hotkeys apply it live) — features re-read prefs and re-register from scratch rather than updating live. The typed text survives via `SharedPreferences` ("KiepKeyboard"/"Text") saved in `onPause`.
 
-When adding a new keyboard command: add its key + default constant in `SettingsActivity`, add the preference UI in the relevant `add*Category` method, create/extend a feature class that registers via `keyPressListener.addListener(...)`, and instantiate it in `FullscreenActivity.onCreate` (and `ReadTxtFileActivity` if it should work there too).
+When adding a new keyboard command: add its key + default constant in `SettingsActivity`, add the preference UI in the relevant `add*Category` method, create/extend a feature class that registers via `keyPressListener.addListener(...)`, and instantiate it in `FullscreenActivity.onCreate` (and `FileEditorActivity` if it should work there too).

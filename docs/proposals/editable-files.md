@@ -1,8 +1,26 @@
 # Proposal: Editable text files
 
-Status: Draft for review
+Status: Phase 1 implemented (2026-07-04)
 Author: (Joost)
 Date: 2026-05-31
+
+> **Implementation notes (Phase 1, 2026-07-04).** Built as designed, with these
+> resolutions from the implementation review:
+>
+> - **Autosave revised**: debounced-per-keystroke file writes caused Dropbox
+>   "conflicted copy" files (every write is an upload; overlaps with remote
+>   edits conflict). File writes now happen only on leaving the editor plus a
+>   5-minute safety timer while dirty; a local SharedPreferences mirror
+>   (2 s debounce, no sync traffic) covers crashes between writes.
+> - **Conflict UX**: local edits win; the save proceeds with a snackbar notice.
+>   The remote version stays recoverable via Dropbox version history.
+> - **Navigation**: switching files is a caregiver action in Settings
+>   ("Choose file"); the F2 hotkey opens the configured file directly and only
+>   shows the picker when no file is configured yet.
+> - **Encoding**: UTF-8; BOM stripped on read and never written back;
+>   `\r\n`/`\n` detected at load and preserved on save.
+> - **Editor features**: all five Notepad features, including abbreviations.
+> - Terminology (Notepad / File / File editor) recorded in `CONTEXT.md`.
 
 ## Background
 
