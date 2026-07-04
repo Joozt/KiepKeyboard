@@ -38,6 +38,28 @@
     <string name="file_save_failed">Opslaan mislukt</string>
     <string name="file_changed_elsewhere">Bestand is elders gewijzigd — jouw versie is opgeslagen</string>
 
+    <string name="setting_external_display">Extern scherm</string>
+    <string name="setting_enable_external_display">Extern scherm inschakelen</string>
+    <string name="setting_enable_external_display_description">Stuur getypte tekst via Bluetooth naar schermen in de buurt (nooit via internet)</string>
+    <string name="setting_external_display_mode">Verzendmodus</string>
+    <string name="mode_hotkey_only">Alleen sneltoets</string>
+    <string name="mode_character">Elke letter (live)</string>
+    <string name="mode_word">Elk woord</string>
+    <string name="mode_sentence">Elke zin</string>
+    <string name="setting_send_key">Verzend sneltoets</string>
+    <string name="setting_send_key_description">Gebruik de %s toets om de zin onder de cursor naar de schermen te sturen</string>
+    <string name="setting_attention_key">Aandacht sneltoets</string>
+    <string name="setting_attention_key_description">Gebruik de %s toets om de schermen te laten knipperen en piepen</string>
+    <string name="setting_auto_attention">Aandacht na verzenden</string>
+    <string name="setting_auto_attention_description">Automatisch aandacht vragen bij elk verzonden woord of elke zin</string>
+    <string name="setting_add_display">Scherm toevoegen</string>
+    <string name="setting_displays">Gekoppelde schermen</string>
+    <string name="searching_displays">Zoeken naar schermen…</string>
+    <string name="no_displays_found">Geen schermen gevonden</string>
+    <string name="no_displays_paired">Geen schermen gekoppeld</string>
+    <string name="remove_display_title">Scherm verwijderen</string>
+    <string name="bluetooth_disabled">Bluetooth staat uit</string>
+
     <string name="setting_file">Bestand</string>
     <string name="setting_choose_file">Kies bestand</string>
     <string name="no_file_chosen">Geen bestand gekozen</string>

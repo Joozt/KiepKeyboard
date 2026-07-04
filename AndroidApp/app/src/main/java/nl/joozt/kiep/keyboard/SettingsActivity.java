@@ -1,17 +1,33 @@
 package nl.joozt.kiep.keyboard;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.ParcelUuid;
 import android.provider.DocumentsContract;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -20,6 +36,14 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreferenceCompat;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class SettingsActivity extends AppCompatActivity {
     static final String[] functionKeys = {"[", "]", "\\", ";", "'", "/", "-", "=", "`", "{", "}", "|", ":", "\"", "<", ">", "~",
@@ -47,6 +71,20 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String NO_KEY_DEFAULT = "[";
     public static final String YES_KEY = "yes_key";
     public static final String YES_KEY_DEFAULT = "]";
+    public static final String ENABLE_EXTERNAL_DISPLAY = "enable_external_display";
+    public static final boolean ENABLE_EXTERNAL_DISPLAY_DEFAULT = false;
+    public static final String EXTERNAL_DISPLAY_MODE = "external_display_mode";
+    public static final String EXTERNAL_DISPLAY_MODE_DEFAULT = "off";
+    public static final String EXTERNAL_DISPLAY_MODE_CHARACTER = "character";
+    public static final String EXTERNAL_DISPLAY_MODE_WORD = "word";
+    public static final String EXTERNAL_DISPLAY_MODE_SENTENCE = "sentence";
+    public static final String SEND_KEY = "send_key";
+    public static final String SEND_KEY_DEFAULT = "\\"; // Same as the TTS speak key: one press speaks and displays
+    public static final String ATTENTION_KEY = "attention_key";
+    public static final String ATTENTION_KEY_DEFAULT = "";
+    public static final String AUTO_ATTENTION = "auto_attention";
+    public static final boolean AUTO_ATTENTION_DEFAULT = false;
+    public static final String EXTERNAL_DISPLAYS = "external_displays"; // StringSet of "address|name"
     public static final String FILE_URI = "file_uri";
     public static final String FILE_URI_DEFAULT = "";
     public static final String OPEN_FILE_KEY = "open_file_key";
@@ -77,6 +115,16 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private static final String CHOOSE_FILE = "choose_file";
+        private static final String ADD_DISPLAY = "add_display";
+        private static final String DISPLAYS = "displays";
+        private static final long SCAN_DURATION_MS = 6000;
+
+        private final ActivityResultLauncher<String[]> blePermissionRequest = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(), grants -> {
+                    if (!grants.containsValue(false)) {
+                        scanForDisplays();
+                    }
+                });
 
         private final ActivityResultLauncher<String[]> filePicker = registerForActivityResult(
                 new ActivityResultContracts.OpenDocument(), uri -> {
@@ -101,10 +149,12 @@ public class SettingsActivity extends AppCompatActivity {
             addFontSizeCategory(context, screen);
             addYesNoCategory(context, screen);
             addTtsCategory(context, screen);
+            addExternalDisplayCategory(context, screen);
             addFileCategory(context, screen);
             addBatteryStatusCategory(context, screen);
             setPreferenceScreen(screen);
             updateChooseFileSummary();
+            updateDisplaysSummary();
 
             screen.findPreference(NO_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(YES_KEY).setDependency(ENABLE_YES_NO);
@@ -113,6 +163,12 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(TTS_SPEAK_ALL_KEY).setDependency(ENABLE_TTS);
             screen.findPreference(TTS_RATE).setDependency(ENABLE_TTS);
             screen.findPreference(TTS_PITCH).setDependency(ENABLE_TTS);
+            screen.findPreference(EXTERNAL_DISPLAY_MODE).setDependency(ENABLE_EXTERNAL_DISPLAY);
+            screen.findPreference(SEND_KEY).setDependency(ENABLE_EXTERNAL_DISPLAY);
+            screen.findPreference(ATTENTION_KEY).setDependency(ENABLE_EXTERNAL_DISPLAY);
+            screen.findPreference(AUTO_ATTENTION).setDependency(ENABLE_EXTERNAL_DISPLAY);
+            screen.findPreference(ADD_DISPLAY).setDependency(ENABLE_EXTERNAL_DISPLAY);
+            screen.findPreference(DISPLAYS).setDependency(ENABLE_EXTERNAL_DISPLAY);
 
             preventDuplicateKeys();
         }
@@ -124,7 +180,7 @@ public class SettingsActivity extends AppCompatActivity {
          * command owns it.
          */
         private void preventDuplicateKeys() {
-            String[] keyPreferences = {FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY, TTS_KEY, TTS_SPEAK_ALL_KEY, OPEN_FILE_KEY};
+            String[] keyPreferences = {FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY, TTS_KEY, TTS_SPEAK_ALL_KEY, OPEN_FILE_KEY, SEND_KEY, ATTENTION_KEY};
             for (String keyPreference : keyPreferences) {
                 ListPreference preference = findPreference(keyPreference);
                 preference.setOnPreferenceChangeListener((changed, newValue) -> {
@@ -139,8 +195,14 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private CharSequence ownerOfKey(String newValue, String changedPreference, String[] keyPreferences) {
+            if (newValue.isEmpty()) {
+                return null; // "None" never conflicts
+            }
             for (String keyPreference : keyPreferences) {
                 if (keyPreference.equals(changedPreference)) {
+                    continue;
+                }
+                if (isAllowedCombination(changedPreference, keyPreference)) {
                     continue;
                 }
                 ListPreference other = findPreference(keyPreference);
@@ -149,6 +211,26 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
             return null;
+        }
+
+        /**
+         * The send key may deliberately equal the TTS speak key: one press
+         * speaks and shows on the external displays (multi-listener dispatch).
+         */
+        private static boolean isAllowedCombination(String changedPreference, String otherPreference) {
+            return (SEND_KEY.equals(changedPreference) && TTS_KEY.equals(otherPreference))
+                    || (TTS_KEY.equals(changedPreference) && SEND_KEY.equals(otherPreference));
+        }
+
+        /**
+         * The shared key list with a leading "None" entry (empty value) for
+         * optional functions that can be left unassigned.
+         */
+        private String[] keysWithNone(boolean asValues) {
+            String[] result = new String[functionKeys.length + 1];
+            result[0] = asValues ? "" : getString(R.string.key_none);
+            System.arraycopy(functionKeys, 0, result, 1, functionKeys.length);
+            return result;
         }
 
         private void addPlayStoreListing(final Context context, PreferenceScreen screen) {
@@ -282,21 +364,12 @@ public class SettingsActivity extends AppCompatActivity {
             speakKey.setDefaultValue(TTS_KEY_DEFAULT);
             category.addPreference(speakKey);
 
-            // Unassigned by default: the key list gets a leading "None" entry
-            // (empty value) so the function can also be unset again.
-            String[] speakAllEntries = new String[functionKeys.length + 1];
-            String[] speakAllValues = new String[functionKeys.length + 1];
-            speakAllEntries[0] = context.getString(R.string.key_none);
-            speakAllValues[0] = "";
-            System.arraycopy(functionKeys, 0, speakAllEntries, 1, functionKeys.length);
-            System.arraycopy(functionKeys, 0, speakAllValues, 1, functionKeys.length);
-
             ListPreference speakAllKey = new ListPreference(context);
             speakAllKey.setKey(TTS_SPEAK_ALL_KEY);
             speakAllKey.setTitle(R.string.setting_tts_speak_all_key);
             speakAllKey.setSummary(R.string.setting_tts_speak_all_key_description);
-            speakAllKey.setEntries(speakAllEntries);
-            speakAllKey.setEntryValues(speakAllValues);
+            speakAllKey.setEntries(keysWithNone(false));
+            speakAllKey.setEntryValues(keysWithNone(true));
             speakAllKey.setDefaultValue(TTS_SPEAK_ALL_KEY_DEFAULT);
             category.addPreference(speakAllKey);
 
@@ -319,6 +392,198 @@ public class SettingsActivity extends AppCompatActivity {
             pitch.setMax(200);
             pitch.setShowSeekBarValue(true);
             category.addPreference(pitch);
+        }
+
+        private void addExternalDisplayCategory(Context context, PreferenceScreen screen) {
+            PreferenceCategory category = new PreferenceCategory(context);
+            category.setKey("external_display");
+            category.setTitle(R.string.setting_external_display);
+            screen.addPreference(category);
+
+            SwitchPreferenceCompat enable = new SwitchPreferenceCompat(context);
+            enable.setKey(ENABLE_EXTERNAL_DISPLAY);
+            enable.setTitle(R.string.setting_enable_external_display);
+            enable.setSummary(R.string.setting_enable_external_display_description);
+            enable.setDefaultValue(ENABLE_EXTERNAL_DISPLAY_DEFAULT);
+            category.addPreference(enable);
+
+            ListPreference mode = new ListPreference(context);
+            mode.setKey(EXTERNAL_DISPLAY_MODE);
+            mode.setTitle(R.string.setting_external_display_mode);
+            mode.setSummary("%s");
+            mode.setEntries(new String[]{
+                    getString(R.string.mode_hotkey_only),
+                    getString(R.string.mode_character),
+                    getString(R.string.mode_word),
+                    getString(R.string.mode_sentence)});
+            mode.setEntryValues(new String[]{
+                    EXTERNAL_DISPLAY_MODE_DEFAULT,
+                    EXTERNAL_DISPLAY_MODE_CHARACTER,
+                    EXTERNAL_DISPLAY_MODE_WORD,
+                    EXTERNAL_DISPLAY_MODE_SENTENCE});
+            mode.setDefaultValue(EXTERNAL_DISPLAY_MODE_DEFAULT);
+            category.addPreference(mode);
+
+            ListPreference sendKey = new ListPreference(context);
+            sendKey.setKey(SEND_KEY);
+            sendKey.setTitle(R.string.setting_send_key);
+            sendKey.setSummary(R.string.setting_send_key_description);
+            sendKey.setEntries(functionKeys);
+            sendKey.setEntryValues(functionKeys);
+            sendKey.setDefaultValue(SEND_KEY_DEFAULT);
+            category.addPreference(sendKey);
+
+            ListPreference attentionKey = new ListPreference(context);
+            attentionKey.setKey(ATTENTION_KEY);
+            attentionKey.setTitle(R.string.setting_attention_key);
+            attentionKey.setSummary(R.string.setting_attention_key_description);
+            attentionKey.setEntries(keysWithNone(false));
+            attentionKey.setEntryValues(keysWithNone(true));
+            attentionKey.setDefaultValue(ATTENTION_KEY_DEFAULT);
+            category.addPreference(attentionKey);
+
+            SwitchPreferenceCompat autoAttention = new SwitchPreferenceCompat(context);
+            autoAttention.setKey(AUTO_ATTENTION);
+            autoAttention.setTitle(R.string.setting_auto_attention);
+            autoAttention.setSummary(R.string.setting_auto_attention_description);
+            autoAttention.setDefaultValue(AUTO_ATTENTION_DEFAULT);
+            category.addPreference(autoAttention);
+
+            Preference addDisplay = new Preference(context);
+            addDisplay.setKey(ADD_DISPLAY);
+            addDisplay.setTitle(R.string.setting_add_display);
+            addDisplay.setOnPreferenceClickListener(preference -> {
+                addDisplayClicked();
+                return true;
+            });
+            category.addPreference(addDisplay);
+
+            Preference displays = new Preference(context);
+            displays.setKey(DISPLAYS);
+            displays.setTitle(R.string.setting_displays);
+            displays.setOnPreferenceClickListener(preference -> {
+                manageDisplaysClicked();
+                return true;
+            });
+            category.addPreference(displays);
+        }
+
+        private void addDisplayClicked() {
+            String[] permissions = blePermissions();
+            for (String permission : permissions) {
+                if (ContextCompat.checkSelfPermission(requireContext(), permission) != PackageManager.PERMISSION_GRANTED) {
+                    blePermissionRequest.launch(permissions);
+                    return;
+                }
+            }
+            scanForDisplays();
+        }
+
+        private static String[] blePermissions() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                return new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT};
+            }
+            return new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+        }
+
+        @SuppressLint("MissingPermission")
+        private void scanForDisplays() {
+            BluetoothManager bluetoothManager = (BluetoothManager) requireContext().getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothAdapter adapter = bluetoothManager.getAdapter();
+            if (adapter == null || !adapter.isEnabled()) {
+                Toast.makeText(requireContext(), R.string.bluetooth_disabled, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            Map<String, String> found = new LinkedHashMap<>();
+            ScanCallback callback = new ScanCallback() {
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                    String name = result.getDevice().getName();
+                    found.put(result.getDevice().getAddress(),
+                            name != null ? name : result.getDevice().getAddress());
+                }
+            };
+
+            Toast.makeText(requireContext(), R.string.searching_displays, Toast.LENGTH_SHORT).show();
+            List<ScanFilter> filters = Collections.singletonList(new ScanFilter.Builder()
+                    .setServiceUuid(new ParcelUuid(ExternalDisplay.SERVICE_UUID))
+                    .build());
+            ScanSettings settings = new ScanSettings.Builder()
+                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                    .build();
+            adapter.getBluetoothLeScanner().startScan(filters, settings, callback);
+
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                adapter.getBluetoothLeScanner().stopScan(callback);
+                if (!isAdded()) {
+                    return;
+                }
+                if (found.isEmpty()) {
+                    Toast.makeText(requireContext(), R.string.no_displays_found, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                String[] addresses = found.keySet().toArray(new String[0]);
+                String[] names = found.values().toArray(new String[0]);
+                new AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.setting_add_display)
+                        .setItems(names, (dialog, which) -> addDisplay(addresses[which], names[which]))
+                        .show();
+            }, SCAN_DURATION_MS);
+        }
+
+        private void addDisplay(String address, String name) {
+            Set<String> displays = new HashSet<>(getPreferenceManager().getSharedPreferences()
+                    .getStringSet(EXTERNAL_DISPLAYS, Collections.emptySet()));
+            displays.add(address + "|" + name);
+            getPreferenceManager().getSharedPreferences().edit()
+                    .putStringSet(EXTERNAL_DISPLAYS, displays)
+                    .apply();
+            updateDisplaysSummary();
+        }
+
+        private void manageDisplaysClicked() {
+            Set<String> displays = getPreferenceManager().getSharedPreferences()
+                    .getStringSet(EXTERNAL_DISPLAYS, Collections.emptySet());
+            if (displays.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.no_displays_paired, Toast.LENGTH_LONG).show();
+                return;
+            }
+            String[] entries = displays.toArray(new String[0]);
+            String[] names = new String[entries.length];
+            for (int i = 0; i < entries.length; i++) {
+                names[i] = entries[i].substring(entries[i].indexOf('|') + 1);
+            }
+            new AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.remove_display_title)
+                    .setItems(names, (dialog, which) -> {
+                        Set<String> updated = new HashSet<>(getPreferenceManager().getSharedPreferences()
+                                .getStringSet(EXTERNAL_DISPLAYS, Collections.emptySet()));
+                        updated.remove(entries[which]);
+                        getPreferenceManager().getSharedPreferences().edit()
+                                .putStringSet(EXTERNAL_DISPLAYS, updated)
+                                .apply();
+                        updateDisplaysSummary();
+                    })
+                    .show();
+        }
+
+        private void updateDisplaysSummary() {
+            Preference displaysPreference = findPreference(DISPLAYS);
+            if (displaysPreference == null) {
+                return;
+            }
+            Set<String> displays = getPreferenceManager().getSharedPreferences()
+                    .getStringSet(EXTERNAL_DISPLAYS, Collections.emptySet());
+            if (displays.isEmpty()) {
+                displaysPreference.setSummary(R.string.no_displays_paired);
+                return;
+            }
+            List<String> names = new ArrayList<>();
+            for (String display : displays) {
+                names.add(display.substring(display.indexOf('|') + 1));
+            }
+            displaysPreference.setSummary(TextUtils.join(", ", names));
         }
 
         private void addFileCategory(Context context, PreferenceScreen screen) {
