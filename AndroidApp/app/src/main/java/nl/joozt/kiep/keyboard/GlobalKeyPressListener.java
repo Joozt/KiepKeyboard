@@ -2,14 +2,12 @@ package nl.joozt.kiep.keyboard;
 
 import android.text.Editable;
 import android.text.InputFilter;
-import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class GlobalKeyPressListener {
     private final Map<CharSequence, OnKeyPressListener> charListeners = new HashMap<>();
@@ -53,21 +51,48 @@ public class GlobalKeyPressListener {
 
     public GlobalKeyPressListener(TextView textView) {
         textView.addTextChangedListener(new TextWatcher() {
+            private int pendingCommandIndex = -1;
+            private OnKeyPressListener pendingListener = null;
+
             @Override
-            public void afterTextChanged(Editable s) {
-                for (CharSequence charSequence : charListeners.keySet()) {
-                    if (containsCharSequence(s, charSequence)) {
-                        Objects.requireNonNull(charListeners.get(charSequence)).onKeyPress();
-                    }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Only a single inserted character can be a command key press.
+                // Programmatic changes (setText, abbreviation expansions,
+                // downloaded documents) insert more than one character and are
+                // left alone.
+                if (count != 1) {
+                    return;
+                }
+                OnKeyPressListener listener = charListeners.get(Character.toString(s.charAt(start)));
+                if (listener != null) {
+                    pendingCommandIndex = start;
+                    pendingListener = listener;
                 }
             }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public void afterTextChanged(Editable s) {
+                if (pendingListener == null) {
+                    return;
+                }
+                OnKeyPressListener listener = pendingListener;
+                int index = pendingCommandIndex;
+                pendingListener = null;
+                pendingCommandIndex = -1;
+
+                // Remove just the typed command character (bypassing filters),
+                // keeping the cursor where it was. The nested text-change this
+                // triggers is a deletion, so it cannot re-enter this branch.
+                InputFilter[] filters = s.getFilters();
+                s.setFilters(new InputFilter[]{});
+                s.delete(index, index + 1);
+                s.setFilters(filters);
+
+                listener.onKeyPress();
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
         });
 
@@ -78,18 +103,6 @@ public class GlobalKeyPressListener {
             }
             return false;
         });
-    }
-
-    private static boolean containsCharSequence(Editable editable, CharSequence sequence) {
-        if (editable.toString().contains(sequence)) {
-            Editable ab = new SpannableStringBuilder(editable.toString().replace(sequence, ""));
-            InputFilter[] filters = editable.getFilters();
-            editable.setFilters(new InputFilter[]{});
-            editable.replace(0, editable.length(), ab);
-            editable.setFilters(filters);
-            return true;
-        }
-        return false;
     }
 
     public void addListener(CharSequence charSequence, OnKeyPressListener listener) {
