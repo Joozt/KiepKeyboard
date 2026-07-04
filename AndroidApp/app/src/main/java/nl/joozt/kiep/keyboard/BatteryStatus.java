@@ -17,7 +17,12 @@ import androidx.preference.PreferenceManager;
 public class BatteryStatus {
     private static final String TAG = BatteryStatus.class.getSimpleName();
 
+    private final Context context;
+    private final BroadcastReceiver batteryInfoReceiver;
+
     public BatteryStatus(Context context, final ProgressBar progressBar, final View background) {
+        this.context = context;
+
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean progressbarEnabled = preferences.getBoolean(SettingsActivity.BATTERY_STATUS, SettingsActivity.BATTERY_STATUS_DEFAULT);
         final boolean lowBatWarningEnabled = preferences.getBoolean(SettingsActivity.LOWBAT_WARNING, SettingsActivity.LOWBAT_WARNING_DEFAULT);
@@ -27,7 +32,7 @@ public class BatteryStatus {
             progressBar.setVisibility(View.INVISIBLE);
         }
 
-        BroadcastReceiver batteryInfoReceiver = new BroadcastReceiver() {
+        batteryInfoReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
@@ -48,5 +53,9 @@ public class BatteryStatus {
         };
 
         context.registerReceiver(batteryInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+    }
+
+    public void destroy() {
+        context.unregisterReceiver(batteryInfoReceiver);
     }
 }

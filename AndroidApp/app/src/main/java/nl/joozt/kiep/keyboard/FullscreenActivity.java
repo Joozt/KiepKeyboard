@@ -20,6 +20,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     private TTS tts;
     private UpdateCheck updateCheck;
     private FontSize fontSize;
+    private BatteryStatus batteryStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +53,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
 
         FrameLayout background = findViewById(R.id.content);
         ProgressBar progressBar = findViewById(R.id.progressBar);
-        new BatteryStatus(this, progressBar, background);
+        batteryStatus = new BatteryStatus(this, progressBar, background);
 
         ReadTxtFileActivity.registerKeyPressListener(this, keyPressListener);
 
@@ -139,6 +140,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     @Override
     protected void onDestroy() {
         tts.destroy();
+        batteryStatus.destroy();
         super.onDestroy();
     }
 }

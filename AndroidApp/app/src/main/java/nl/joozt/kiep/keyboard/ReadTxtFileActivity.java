@@ -35,6 +35,7 @@ public class ReadTxtFileActivity extends AppCompatActivity {
     private ProgressBar loading;
     private TTS tts;
     private YesNo yesNo;
+    private BatteryStatus batteryStatus;
 
     public static void registerKeyPressListener(Context context, GlobalKeyPressListener keyPressListener) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -58,7 +59,7 @@ public class ReadTxtFileActivity extends AppCompatActivity {
 
         FrameLayout background = findViewById(R.id.content);
         ProgressBar progressBar = findViewById(R.id.progressBar);
-        new BatteryStatus(this, progressBar, background);
+        batteryStatus = new BatteryStatus(this, progressBar, background);
 
         loading = findViewById(R.id.loading);
         editText = findViewById(R.id.editText);
@@ -99,6 +100,7 @@ public class ReadTxtFileActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         tts.destroy();
+        batteryStatus.destroy();
         super.onDestroy();
     }
 
