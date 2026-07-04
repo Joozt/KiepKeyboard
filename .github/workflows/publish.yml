@@ -24,9 +24,11 @@ jobs:
         env:
           FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
         run: echo $FIREBASE_CONFIG > ./AndroidApp/app/google-services.json
+      - name: Compute version from commit count
+        run: echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
       - name: Build release APK
         working-directory: AndroidApp
-        run: bash ./gradlew bundleRelease
+        run: bash ./gradlew bundleRelease -PversionCode=$VERSION_CODE
       - name: Sign release APK
         id: sign-release
         uses: r0adkll/sign-android-release@v1

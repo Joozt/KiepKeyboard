@@ -3,6 +3,11 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
+// CI stamps the version from the git commit count (-PversionCode=...),
+// so the AAB from publish.yml is directly uploadable to the Play Store
+// without a manual bump commit. Local builds use the fallback.
+val ciVersionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull()
+
 android {
     namespace = "nl.joozt.kiep.keyboard"
     compileSdk = 37
@@ -11,8 +16,8 @@ android {
         applicationId = "nl.joozt.kiep.keyboard"
         minSdk = 24
         targetSdk = 37
-        versionCode = 59
-        versionName = "Dependencies upgrade"
+        versionCode = ciVersionCode ?: 59
+        versionName = ciVersionCode?.let { "1.$it" } ?: "1.59-dev"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -31,9 +31,11 @@ jobs:
       with:
         name: lint-report
         path: AndroidApp/app/build/reports/lint-results-debug.html
+    - name: Compute version from commit count
+      run: echo "VERSION_CODE=$(git rev-list --count HEAD)" >> $GITHUB_ENV
     - name: Build debug APK
       working-directory: AndroidApp
-      run: bash ./gradlew assembleDebug --stacktrace
+      run: bash ./gradlew assembleDebug --stacktrace -PversionCode=$VERSION_CODE
     - name: Archive APK
       uses: actions/upload-artifact@v4.6.0
       with:
