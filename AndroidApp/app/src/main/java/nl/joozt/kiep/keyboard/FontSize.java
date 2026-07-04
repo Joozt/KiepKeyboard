@@ -8,37 +8,47 @@ import android.widget.EditText;
 import androidx.preference.PreferenceManager;
 
 public class FontSize {
-    private final Context context;
+    private static final int STEP_SP = 10;
+    private static final int MIN_SP = 10;
+    private static final int MAX_SP = 400;
+
     private final SharedPreferences preferences;
     private final EditText editText;
     private final String decrementKey;
     private final String incrementKey;
+    private int fontSizeSp;
 
     public FontSize(Context context, GlobalKeyPressListener keyPressListener, final EditText editText) {
-        this.context = context;
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
         this.editText = editText;
 
-        float fontSizeSp = preferences.getInt(SettingsActivity.FONT_SIZE, SettingsActivity.FONT_SIZE_DEFAULT);
-        editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp);
+        // Track the size in sp directly instead of deriving it back from
+        // pixels; DisplayMetrics.scaledDensity is deprecated (API 34) and the
+        // px->sp round-trip is wrong under non-linear font scaling anyway.
+        fontSizeSp = preferences.getInt(SettingsActivity.FONT_SIZE, SettingsActivity.FONT_SIZE_DEFAULT);
+        applyFontSize();
 
         decrementKey = preferences.getString(SettingsActivity.FONT_SIZE_DECREMENT_KEY, SettingsActivity.FONT_SIZE_DECREMENT_KEY_DEFAULT);
         keyPressListener.addListener(decrementKey, () -> {
-            float fontSize = (editText.getTextSize() / context.getResources().getDisplayMetrics().scaledDensity) - 10;
-            if (fontSize >= 10) {
-                editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+            if (fontSizeSp - STEP_SP >= MIN_SP) {
+                fontSizeSp -= STEP_SP;
+                applyFontSize();
             }
             return true;
         });
 
         incrementKey = preferences.getString(SettingsActivity.FONT_SIZE_INCREMENT_KEY, SettingsActivity.FONT_SIZE_INCREMENT_KEY_DEFAULT);
         keyPressListener.addListener(incrementKey, () -> {
-            float fontSize = (editText.getTextSize() / context.getResources().getDisplayMetrics().scaledDensity) + 10;
-            if (fontSize <= 400) {
-                editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+            if (fontSizeSp + STEP_SP <= MAX_SP) {
+                fontSizeSp += STEP_SP;
+                applyFontSize();
             }
             return true;
         });
+    }
+
+    private void applyFontSize() {
+        editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp);
     }
 
     public String getDecrementKey() {
@@ -50,8 +60,6 @@ public class FontSize {
     }
 
     public void saveCurrentFontSize() {
-        float fontSizePx = editText.getTextSize();
-        int fontSizeSp = (int) (fontSizePx / context.getResources().getDisplayMetrics().scaledDensity);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt(SettingsActivity.FONT_SIZE, fontSizeSp);
         editor.apply();
