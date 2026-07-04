@@ -21,6 +21,26 @@ Date: 2026-05-31
 >   `\r\n`/`\n` detected at load and preserved on save.
 > - **Editor features**: all five Notepad features, including abbreviations.
 > - Terminology (Notepad / File / File editor) recorded in `CONTEXT.md`.
+>
+> **Conflicted-copy research (2026-07-04).** In practice nearly every real edit
+> saved through the Dropbox SAF provider produced a conflicted copy. Root
+> cause: Dropbox uploads use `WriteMode.update(rev)` — safe-update against a
+> base revision, where a mismatch makes the *server* autorename the upload to
+> "... (conflicted copy)". The Dropbox Android app uploads third-party SAF
+> writes against the rev of its *cached* copy, which it refreshes mainly on
+> folder browsing in its own UI — so the base rev is stale on almost every
+> save. Write frequency was never the mechanism (sparse writes help sync
+> hygiene but cannot fix staleness); identical-content uploads never conflict,
+> which is why no-edit sessions stayed clean. Prior art: keepass2android and
+> QuickEdit fix this with the native Dropbox API and explicit rev tracking
+> (= Phase 3 here); Markor refuses SAF-cloud and documents "local file + sync
+> client (Dropsync/FolderSync)" instead.
+>
+> **Current experiment**: the editor reads the document immediately before
+> each write, hoping the provider refreshes its cached copy + rev on download.
+> Unverified — decided by device testing (≥3 edit sessions, no new conflicted
+> copies). If it fails: fallback 1 is a local file + sync client (no code,
+> works today); fallback 2 is the Phase 3 Dropbox-API backend.
 
 ## Background
 

@@ -356,6 +356,16 @@ public class FileEditorActivity extends AppCompatActivity {
         final long expectedLastModified = lastModifiedAtLoad;
         io.execute(() -> {
             try {
+                // Experiment (editable-files.md): read the document right
+                // before writing to nudge the provider into refreshing its
+                // cached copy and revision - a stale cached rev is what makes
+                // Dropbox mint "conflicted copy" files
+                try (InputStream in = getContentResolver().openInputStream(fileUri)) {
+                    readUtf8(Objects.requireNonNull(in));
+                } catch (Exception e) {
+                    Log.w(TAG, "Pre-write refresh read failed", e);
+                }
+
                 // Local edits win on conflict; the remote version stays
                 // recoverable through the provider's own history (Dropbox)
                 boolean changedElsewhere = queryLastModified(fileUri) != expectedLastModified;
