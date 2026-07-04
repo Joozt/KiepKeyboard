@@ -31,7 +31,9 @@
             android:name=".FileEditorActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.KiepKeyboard.Fullscreen" />
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.KiepKeyboard.Fullscreen"
+            tools:ignore="DiscouragedApi" />
 
         <activity
             android:name=".SettingsActivity"
