@@ -11,8 +11,8 @@ android {
         applicationId = "nl.joozt.kiep.keyboard"
         minSdk = 24
         targetSdk = 37
-        versionCode = 58
-        versionName = "Animation tweak"
+        versionCode = 59
+        versionName = "Dependencies upgrade"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
