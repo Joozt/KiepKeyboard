@@ -3,7 +3,6 @@ package nl.joozt.kiep.keyboard;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.TextToSpeech.OnInitListener;
 import android.util.Log;
 import android.widget.EditText;
 
@@ -16,49 +15,34 @@ public class TTS {
 
     private TextToSpeech textToSpeech;
     private Analytics analytics = null;
-    private final String charSpeak;
+    private final String speakKey;
     private final String speakAllKey;
 
     public TTS(Context context, GlobalKeyPressListener keyPressListener, final EditText editText) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean ttsEnabled = preferences.getBoolean(SettingsActivity.ENABLE_TTS, SettingsActivity.ENABLE_TTS_DEFAULT);
-        if (!ttsEnabled) {
-            charSpeak = "";
+        if (!preferences.getBoolean(SettingsActivity.ENABLE_TTS, SettingsActivity.ENABLE_TTS_DEFAULT)) {
+            speakKey = "";
             speakAllKey = "";
             return;
         }
 
-        final float rate = preferences.getInt(SettingsActivity.TTS_RATE, SettingsActivity.TTS_RATE_DEFAULT) / 100f;
-        final float pitch = preferences.getInt(SettingsActivity.TTS_PITCH, SettingsActivity.TTS_PITCH_DEFAULT) / 100f;
+        // The engine speaks the device language, at the configured rate and pitch
+        textToSpeech = new TextToSpeech(context, status -> {
+            if (status != TextToSpeech.SUCCESS) {
+                Log.e(TAG, "Failed to initialize");
+                return;
+            }
+            int result = textToSpeech.setLanguage(Locale.getDefault());
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "Language is not supported");
+            }
+            textToSpeech.setSpeechRate(preferences.getInt(SettingsActivity.TTS_RATE, SettingsActivity.TTS_RATE_DEFAULT) / 100f);
+            textToSpeech.setPitch(preferences.getInt(SettingsActivity.TTS_PITCH, SettingsActivity.TTS_PITCH_DEFAULT) / 100f);
+        });
 
-        // Initialize TextToSpeech with the proper language setting (based on Locale)
-        textToSpeech = new TextToSpeech(context,
-                new OnInitListener() {
-
-                    @Override
-                    public void onInit(int status) {
-                        // Check if successfully loaded
-                        if (status == TextToSpeech.SUCCESS) {
-                            // Define the language to be used
-                            int result = textToSpeech.setLanguage(Locale.getDefault());
-                            // Check if language is loaded OK yes/no
-                            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                                Log.e(TAG, "Language is not supported");
-                            } else {
-                                Log.i(TAG, "TextToSpeech is Initialized");
-                            }
-                            textToSpeech.setSpeechRate(rate);
-                            textToSpeech.setPitch(pitch);
-                        } else {
-                            // Display TTS is not able to initialize
-                            Log.e(TAG, "Failed to Initialize");
-                        }
-                    }
-                });
-
-        charSpeak = preferences.getString(SettingsActivity.TTS_KEY, SettingsActivity.TTS_KEY_DEFAULT);
-        keyPressListener.addListener(charSpeak, () -> {
-            speak(getTextToSpeak(editText));
+        speakKey = preferences.getString(SettingsActivity.TTS_KEY, SettingsActivity.TTS_KEY_DEFAULT);
+        keyPressListener.addListener(speakKey, () -> {
+            speak(sentenceAt(editText.getText().toString(), editText.getSelectionStart()));
             return true;
         });
 
@@ -71,8 +55,8 @@ public class TTS {
         }
     }
 
-    public String getCharSpeak() {
-        return charSpeak;
+    public String getSpeakKey() {
+        return speakKey;
     }
 
     public String getSpeakAllKey() {
@@ -83,21 +67,15 @@ public class TTS {
         this.analytics = analytics;
     }
 
-    // Speak functionality
     public void speak(String text) {
-        // If no argument, return
-        if (textToSpeech == null || text == null || text.isEmpty()) {
+        if (textToSpeech == null || text.isEmpty()) {
             return;
         }
 
-        // Add message to logging
         Log.i(TAG, "Speak: " + text);
-
         if (analytics != null) {
             analytics.logTts(text.split("\\s+").length);
         }
-
-        // Speak text
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
@@ -113,10 +91,6 @@ public class TTS {
             textToSpeech.shutdown();
             textToSpeech = null;
         }
-    }
-
-    private String getTextToSpeak(EditText editText) {
-        return sentenceAt(editText.getText().toString(), editText.getSelectionStart());
     }
 
     /**

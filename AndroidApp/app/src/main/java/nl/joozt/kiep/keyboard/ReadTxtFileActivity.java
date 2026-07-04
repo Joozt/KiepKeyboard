@@ -163,7 +163,7 @@ public class ReadTxtFileActivity extends AppCompatActivity {
                         character.equals(yesNo.getNoKey()) ||
                         character.equals(fontSize.getIncrementKey()) ||
                         character.equals(fontSize.getDecrementKey()) ||
-                        character.equals(tts.getCharSpeak()) ||
+                        character.equals(tts.getSpeakKey()) ||
                         character.equals(tts.getSpeakAllKey()) ||
                         character.equals("\n")) {
                     return null;
