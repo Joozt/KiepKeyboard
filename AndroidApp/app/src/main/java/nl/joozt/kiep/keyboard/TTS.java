@@ -63,10 +63,12 @@ public class TTS {
         });
 
         speakAllKey = preferences.getString(SettingsActivity.TTS_SPEAK_ALL_KEY, SettingsActivity.TTS_SPEAK_ALL_KEY_DEFAULT);
-        keyPressListener.addListener(speakAllKey, () -> {
-            speak(editText.getText().toString().trim());
-            return true;
-        });
+        if (!speakAllKey.isEmpty()) {
+            keyPressListener.addListener(speakAllKey, () -> {
+                speak(editText.getText().toString().trim());
+                return true;
+            });
+        }
     }
 
     public String getCharSpeak() {

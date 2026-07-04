@@ -47,6 +47,7 @@
     <string name="setting_enable_tts_description">Speak text aloud with a hotkey</string>
     <string name="setting_tts_key">Speak hotkey</string>
     <string name="setting_tts_key_description">Use the %s key to speak the last sentence aloud</string>
+    <string name="key_none">None</string>
     <string name="setting_tts_speak_all_key">Speak everything hotkey</string>
     <string name="setting_tts_speak_all_key_description">Use the %s key to speak all text aloud</string>
     <string name="setting_tts_rate">Speech rate (%)</string>

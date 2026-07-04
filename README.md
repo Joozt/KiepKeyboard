@@ -36,7 +36,6 @@ Beyond plain typing, physical keys are repurposed as commands so the user can co
 | `[` | Speak the "no" sound + flash the screen red |
 | `]` | Speak the "yes" sound + flash the screen green |
 | `\` | Speak the last sentence aloud (text-to-speech) |
-| `F5` | Speak all text aloud (text-to-speech) |
 | `F9` / `F10` | Decrease / increase the font size |
 | `F2` | Download and show the configured `.txt` file (only if a URL is set) |
 | `Backspace` | Undo the last abbreviation expansion |

@@ -35,7 +35,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String TTS_KEY = "tts_key";
     public static final String TTS_KEY_DEFAULT = "\\";
     public static final String TTS_SPEAK_ALL_KEY = "tts_speak_all_key";
-    public static final String TTS_SPEAK_ALL_KEY_DEFAULT = "F5";
+    public static final String TTS_SPEAK_ALL_KEY_DEFAULT = "";
     public static final String TTS_RATE = "tts_rate";
     public static final int TTS_RATE_DEFAULT = 100;
     public static final String TTS_PITCH = "tts_pitch";
@@ -288,12 +288,21 @@ public class SettingsActivity extends AppCompatActivity {
             speakKey.setDefaultValue(TTS_KEY_DEFAULT);
             category.addPreference(speakKey);
 
+            // Unassigned by default: the key list gets a leading "None" entry
+            // (empty value) so the function can also be unset again.
+            String[] speakAllEntries = new String[functionKeys.length + 1];
+            String[] speakAllValues = new String[functionKeys.length + 1];
+            speakAllEntries[0] = context.getString(R.string.key_none);
+            speakAllValues[0] = "";
+            System.arraycopy(functionKeys, 0, speakAllEntries, 1, functionKeys.length);
+            System.arraycopy(functionKeys, 0, speakAllValues, 1, functionKeys.length);
+
             ListPreference speakAllKey = new ListPreference(context);
             speakAllKey.setKey(TTS_SPEAK_ALL_KEY);
             speakAllKey.setTitle(R.string.setting_tts_speak_all_key);
             speakAllKey.setSummary(R.string.setting_tts_speak_all_key_description);
-            speakAllKey.setEntries(functionKeys);
-            speakAllKey.setEntryValues(functionKeys);
+            speakAllKey.setEntries(speakAllEntries);
+            speakAllKey.setEntryValues(speakAllValues);
             speakAllKey.setDefaultValue(TTS_SPEAK_ALL_KEY_DEFAULT);
             category.addPreference(speakAllKey);
 
