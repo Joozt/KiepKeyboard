@@ -20,6 +20,11 @@ public class TTS {
 
     public TTS(Context context, GlobalKeyPressListener keyPressListener, final EditText editText) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean ttsEnabled = preferences.getBoolean(SettingsActivity.ENABLE_TTS, SettingsActivity.ENABLE_TTS_DEFAULT);
+        if (!ttsEnabled) {
+            charSpeak = "";
+            return;
+        }
 
         // Initialize TextToSpeech with the proper language setting (based on Locale)
         textToSpeech = new TextToSpeech(context,

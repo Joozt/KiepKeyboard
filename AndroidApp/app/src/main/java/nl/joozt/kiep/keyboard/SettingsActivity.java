@@ -30,6 +30,8 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String DOWNLOAD_TXT_URL_DEFAULT = "";
     public static final String DOWNLOAD_TXT_KEY = "download_txt_key";
     public static final String DOWNLOAD_TXT_KEY_DEFAULT = "F2";
+    public static final String ENABLE_TTS = "enable_tts";
+    public static final boolean ENABLE_TTS_DEFAULT = true;
     public static final String TTS_KEY = "tts_key";
     public static final String TTS_KEY_DEFAULT = "\\";
     public static final String ENABLE_YES_NO = "enable_yes_no";
@@ -83,6 +85,7 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(YES_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(ENABLE_HIGHLIGHT).setDependency(ENABLE_YES_NO);
             screen.findPreference(DOWNLOAD_TXT_KEY).setDependency(DOWNLOAD_TXT_URL);
+            screen.findPreference(TTS_KEY).setDependency(ENABLE_TTS);
 
             preventDuplicateKeys();
         }
@@ -259,6 +262,13 @@ public class SettingsActivity extends AppCompatActivity {
             category.setKey("tts");
             category.setTitle(R.string.setting_tts);
             screen.addPreference(category);
+
+            SwitchPreferenceCompat enableTts = new SwitchPreferenceCompat(context);
+            enableTts.setKey(ENABLE_TTS);
+            enableTts.setTitle(R.string.setting_enable_tts);
+            enableTts.setSummary(R.string.setting_enable_tts_description);
+            enableTts.setDefaultValue(ENABLE_TTS_DEFAULT);
+            category.addPreference(enableTts);
 
             ListPreference speakKey = new ListPreference(context);
             speakKey.setKey(TTS_KEY);
