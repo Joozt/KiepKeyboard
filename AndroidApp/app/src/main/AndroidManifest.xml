@@ -29,10 +29,12 @@
         </activity>
 
         <activity
-            android:name=".ReadTxtFileActivity"
+            android:name=".EditTxtFileActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:launchMode="singleTask"
-            android:theme="@style/FullscreenTheme" />
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/FullscreenTheme"
+            tools:ignore="DiscouragedApi" />
 
         <activity
             android:name=".SettingsActivity"

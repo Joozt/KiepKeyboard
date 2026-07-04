@@ -6,11 +6,12 @@
     <string name="update_ready">Update is gereed om te installeren</string>
     <string name="update_restart">OPNIEUW STARTEN</string>
 
-    <string name="unable_to_download">Kan niet downloaden (offline?)</string>
-    <string name="failed_request">Download mislukt</string>
-    <string name="no_data">Geen gegevens gedownload</string>
-    <string name="showing_downloaded">Toont gedownload bestand</string>
-    <string name="downloading">Bezig met downloaden</string>
+    <string name="edit_txt_none_selected">Geen bestand geselecteerd</string>
+    <string name="edit_txt_opened">Bewerken van %s</string>
+    <string name="edit_txt_read_only">Alleen-lezen bestand (wijzigingen worden niet opgeslagen)</string>
+    <string name="edit_txt_load_failed">Kan bestand niet openen</string>
+    <string name="edit_txt_save_failed">Opslaan mislukt — bestand is nu alleen-lezen</string>
+    <string name="edit_txt_conflict">Bestand elders gewijzigd. Ja = opnieuw laden, Nee = mijne behouden</string>
 
     <string name="setting_open_play_store_listing">Open Play Store pagina</string>
     <string name="setting_open_play_store_listing_description">Open de pagina van deze app in de Google Play Store</string>
@@ -38,9 +39,10 @@
     <string name="setting_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
     <string name="setting_abbreviations">Afkortingen</string>
     <string name="setting_abbreviations_description">Afkortingen in AutoHotKey formaat (::kkb::KiepKeyboard)</string>
-    <string name="setting_download_txt">Download en toon een .txt bestand (alleen lezen)</string>
-    <string name="setting_download_txt_url">De URL naar een .txt bestand</string>
-    <string name="setting_download_txt_url_description">Bijvoorbeeld een gedeelde link uit Dropbox</string>
-    <string name="setting_download_txt_key">Download .txt bestand sneltoets</string>
-    <string name="setting_download_txt_key_description">Gebruik de %s toets om een gedownload .txt bestand te tonen</string>
+    <string name="setting_edit_txt">Een tekstbestand bewerken</string>
+    <string name="setting_edit_txt_enable">Bewerken inschakelen</string>
+    <string name="setting_edit_txt_enable_description">Open en bewerk een tekstbestand (bijv. uit Dropbox) met een sneltoets</string>
+    <string name="setting_edit_txt_key">Bestand bewerken sneltoets</string>
+    <string name="setting_edit_txt_key_description">Gebruik de %s toets om het ingestelde bestand te bewerken</string>
+    <string name="setting_edit_txt_open">Bestand openen…</string>
 </resources>

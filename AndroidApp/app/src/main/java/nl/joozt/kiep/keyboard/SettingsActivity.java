@@ -2,10 +2,14 @@ package nl.joozt.kiep.keyboard;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.provider.OpenableColumns;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
@@ -13,6 +17,7 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 import androidx.preference.SeekBarPreference;
 import androidx.preference.SwitchPreferenceCompat;
@@ -25,10 +30,13 @@ public class SettingsActivity extends AppCompatActivity {
     public static final boolean ENABLE_SETTINGS_BUTTON_DEFAULT = true;
     public static final String ABBREVIATIONS = "abbreviations";
     public static final String ABBREVIATIONS_DEFAULT = "::kkb::KiepKeyboard";
-    public static final String DOWNLOAD_TXT_URL = "download_txt_url";
-    public static final String DOWNLOAD_TXT_URL_DEFAULT = "";
-    public static final String DOWNLOAD_TXT_KEY = "download_txt_key";
-    public static final String DOWNLOAD_TXT_KEY_DEFAULT = "F2";
+    public static final String EDIT_TXT_ENABLE = "edit_txt_enable";
+    public static final boolean EDIT_TXT_ENABLE_DEFAULT = true;
+    public static final String EDIT_TXT_KEY = "edit_txt_key";
+    public static final String EDIT_TXT_KEY_DEFAULT = "F2";
+    public static final String EDIT_TXT_OPEN = "edit_txt_open";
+    public static final String EDIT_TXT_URI = "edit_txt_uri";
+    public static final String EDIT_TXT_DISPLAY_NAME = "edit_txt_display_name";
     public static final String ENABLE_YES_NO = "enable_yes_no";
     public static final boolean ENABLE_YES_NO_DEFAULT = true;
     public static final String ENABLE_HIGHLIGHT = "enable_highlight";
@@ -69,7 +77,7 @@ public class SettingsActivity extends AppCompatActivity {
             addPlayStoreListing(context, screen);
             addSettingsButton(context, screen);
             addAbbreviations(context, screen);
-            addDownloadTxtCategory(context, screen);
+            addEditTxtCategory(context, screen);
             addFontSizeCategory(context, screen);
             addYesNoCategory(context, screen);
             addBatteryStatusCategory(context, screen);
@@ -78,7 +86,8 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(NO_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(YES_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(ENABLE_HIGHLIGHT).setDependency(ENABLE_YES_NO);
-            screen.findPreference(DOWNLOAD_TXT_KEY).setDependency(DOWNLOAD_TXT_URL);
+            screen.findPreference(EDIT_TXT_KEY).setDependency(EDIT_TXT_ENABLE);
+            screen.findPreference(EDIT_TXT_OPEN).setDependency(EDIT_TXT_ENABLE);
         }
 
         private void addPlayStoreListing(final Context context, PreferenceScreen screen) {
@@ -116,28 +125,105 @@ public class SettingsActivity extends AppCompatActivity {
             screen.addPreference(abbreviations);
         }
 
-        private void addDownloadTxtCategory(Context context, PreferenceScreen screen) {
+        private Preference openFilePreference;
+
+        // SAF picker. Registered as a field so it is ready before the fragment is started.
+        private final ActivityResultLauncher<Intent> openFileLauncher =
+                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null && result.getData().getData() != null) {
+                        onFilePicked(result.getData().getData());
+                    }
+                });
+
+        private void addEditTxtCategory(Context context, PreferenceScreen screen) {
             PreferenceCategory category = new PreferenceCategory(context);
-            category.setKey("download_txt");
-            category.setTitle(R.string.setting_download_txt);
+            category.setKey("edit_txt");
+            category.setTitle(R.string.setting_edit_txt);
             screen.addPreference(category);
 
-            EditTextPreference url = new EditTextPreference(context);
-            url.setKey(DOWNLOAD_TXT_URL);
-            url.setTitle(R.string.setting_download_txt_url);
-            url.setSummary(R.string.setting_download_txt_url_description);
-            url.setDefaultValue(DOWNLOAD_TXT_URL_DEFAULT);
-            url.setOnBindEditTextListener(TextView::setSingleLine);
-            category.addPreference(url);
+            SwitchPreferenceCompat enable = new SwitchPreferenceCompat(context);
+            enable.setKey(EDIT_TXT_ENABLE);
+            enable.setTitle(R.string.setting_edit_txt_enable);
+            enable.setSummary(R.string.setting_edit_txt_enable_description);
+            enable.setDefaultValue(EDIT_TXT_ENABLE_DEFAULT);
+            category.addPreference(enable);
 
             ListPreference key = new ListPreference(context);
-            key.setKey(DOWNLOAD_TXT_KEY);
-            key.setTitle(R.string.setting_download_txt_key);
-            key.setSummary(R.string.setting_download_txt_key_description);
+            key.setKey(EDIT_TXT_KEY);
+            key.setTitle(R.string.setting_edit_txt_key);
+            key.setSummary(R.string.setting_edit_txt_key_description);
             key.setEntries(functionKeys);
             key.setEntryValues(functionKeys);
-            key.setDefaultValue(DOWNLOAD_TXT_KEY_DEFAULT);
+            key.setDefaultValue(EDIT_TXT_KEY_DEFAULT);
             category.addPreference(key);
+
+            openFilePreference = new Preference(context);
+            openFilePreference.setKey(EDIT_TXT_OPEN);
+            openFilePreference.setTitle(R.string.setting_edit_txt_open);
+            openFilePreference.setSummary(currentFileSummary());
+            openFilePreference.setOnPreferenceClickListener(preference -> {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("text/plain");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                openFileLauncher.launch(intent);
+                return true;
+            });
+            category.addPreference(openFilePreference);
+        }
+
+        private CharSequence currentFileSummary() {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+            String name = preferences.getString(EDIT_TXT_DISPLAY_NAME, "");
+            return name.isEmpty() ? getString(R.string.edit_txt_none_selected) : name;
+        }
+
+        private void onFilePicked(Uri uri) {
+            Context context = requireContext();
+
+            // Taking the persistable write permission is the writability probe; fall back to read-only.
+            int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+            try {
+                context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
+            } catch (SecurityException e) {
+                try {
+                    context.getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (SecurityException ignored) {
+                    // No persistable permission at all; we still store the URI and let the editor report problems.
+                }
+            }
+
+            String displayName = queryDisplayName(context, uri);
+
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+            editor.putString(EDIT_TXT_URI, uri.toString());
+            editor.putString(EDIT_TXT_DISPLAY_NAME, displayName);
+            editor.apply();
+
+            if (openFilePreference != null) {
+                openFilePreference.setSummary(displayName.isEmpty()
+                        ? getString(R.string.edit_txt_none_selected) : displayName);
+            }
+        }
+
+        private static String queryDisplayName(Context context, Uri uri) {
+            try (Cursor cursor = context.getContentResolver().query(
+                    uri, new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (index >= 0) {
+                        String name = cursor.getString(index);
+                        if (name != null) {
+                            return name;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+                // Fall through to empty name.
+            }
+            return "";
         }
 
         private void addFontSizeCategory(Context context, PreferenceScreen screen) {

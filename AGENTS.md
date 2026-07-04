@@ -40,7 +40,7 @@ Feature classes each take `(Context, GlobalKeyPressListener, EditText)` and regi
 - `Abbreviations` — expands `::abbr::expansion` snippets when an end-char is typed; Backspace undoes the last expansion (`UndoInfo`).
 - `FontSize` — increment/decrement keys resize text; size persisted to prefs in `onPause`/`saveCurrentFontSize`.
 - `BatteryStatus` — registers an `ACTION_BATTERY_CHANGED` receiver, drives the `ProgressBar`, tints/darkens on low battery.
-- `ReadTxtFileActivity` — separate activity launched by a configurable key; downloads a text file (OkHttp) and shows it read-only, with an `InputFilter` that still lets the yes/no, TTS, and font keys through.
+- `EditTxtFileActivity` — separate activity launched by a configurable key; opens a `text/plain` file picked via the Storage Access Framework (persisted `content://` URI), edits it in the fullscreen buffer, and autosaves back (debounced + flush on pause). Read-only files fall back to an `InputFilter` that still lets the yes/no, TTS, and font keys through. Best-effort external-edit/conflict detection via `DocumentsContract` last-modified/size.
 - `UpdateCheck` — Play in-app flexible updates.
 - `Analytics` — thin Firebase wrapper (logs yes/no/tts events).
 
@@ -48,4 +48,4 @@ Feature classes each take `(Context, GlobalKeyPressListener, EditText)` and regi
 
 **Reactivity.** `FullscreenActivity` implements `OnSharedPreferenceChangeListener` and calls `recreate()` on any settings change — features re-read prefs and re-register from scratch rather than updating live. The typed text survives via `SharedPreferences` ("KiepKeyboard"/"Text") saved in `onPause`.
 
-When adding a new keyboard command: add its key + default constant in `SettingsActivity`, add the preference UI in the relevant `add*Category` method, create/extend a feature class that registers via `keyPressListener.addListener(...)`, and instantiate it in `FullscreenActivity.onCreate` (and `ReadTxtFileActivity` if it should work there too).
+When adding a new keyboard command: add its key + default constant in `SettingsActivity`, add the preference UI in the relevant `add*Category` method, create/extend a feature class that registers via `keyPressListener.addListener(...)`, and instantiate it in `FullscreenActivity.onCreate` (and `EditTxtFileActivity` if it should work there too).
