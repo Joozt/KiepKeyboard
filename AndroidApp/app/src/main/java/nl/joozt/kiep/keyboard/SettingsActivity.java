@@ -30,6 +30,8 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String DOWNLOAD_TXT_URL_DEFAULT = "";
     public static final String DOWNLOAD_TXT_KEY = "download_txt_key";
     public static final String DOWNLOAD_TXT_KEY_DEFAULT = "F2";
+    public static final String TTS_KEY = "tts_key";
+    public static final String TTS_KEY_DEFAULT = "\\";
     public static final String ENABLE_YES_NO = "enable_yes_no";
     public static final boolean ENABLE_YES_NO_DEFAULT = true;
     public static final String ENABLE_HIGHLIGHT = "enable_highlight";
@@ -73,6 +75,7 @@ public class SettingsActivity extends AppCompatActivity {
             addDownloadTxtCategory(context, screen);
             addFontSizeCategory(context, screen);
             addYesNoCategory(context, screen);
+            addTtsCategory(context, screen);
             addBatteryStatusCategory(context, screen);
             setPreferenceScreen(screen);
 
@@ -91,7 +94,7 @@ public class SettingsActivity extends AppCompatActivity {
          * command owns it.
          */
         private void preventDuplicateKeys() {
-            String[] keyPreferences = {DOWNLOAD_TXT_KEY, FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY};
+            String[] keyPreferences = {DOWNLOAD_TXT_KEY, FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY, TTS_KEY};
             for (String keyPreference : keyPreferences) {
                 ListPreference preference = findPreference(keyPreference);
                 preference.setOnPreferenceChangeListener((changed, newValue) -> {
@@ -106,9 +109,6 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private CharSequence ownerOfKey(String newValue, String changedPreference, String[] keyPreferences) {
-            if (TTS.CHAR_SPEAK.equals(newValue)) {
-                return getString(R.string.function_text_to_speech);
-            }
             for (String keyPreference : keyPreferences) {
                 if (keyPreference.equals(changedPreference)) {
                     continue;
@@ -252,6 +252,22 @@ public class SettingsActivity extends AppCompatActivity {
             enableHighlight.setSummary(R.string.setting_enable_highlight_description);
             enableHighlight.setDefaultValue(ENABLE_HIGHLIGHT_DEFAULT);
             category.addPreference(enableHighlight);
+        }
+
+        private void addTtsCategory(Context context, PreferenceScreen screen) {
+            PreferenceCategory category = new PreferenceCategory(context);
+            category.setKey("tts");
+            category.setTitle(R.string.setting_tts);
+            screen.addPreference(category);
+
+            ListPreference speakKey = new ListPreference(context);
+            speakKey.setKey(TTS_KEY);
+            speakKey.setTitle(R.string.setting_tts_key);
+            speakKey.setSummary(R.string.setting_tts_key_description);
+            speakKey.setEntries(functionKeys);
+            speakKey.setEntryValues(functionKeys);
+            speakKey.setDefaultValue(TTS_KEY_DEFAULT);
+            category.addPreference(speakKey);
         }
 
         private void addBatteryStatusCategory(Context context, PreferenceScreen screen) {

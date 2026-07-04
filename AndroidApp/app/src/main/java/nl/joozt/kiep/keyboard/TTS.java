@@ -1,23 +1,25 @@
 package nl.joozt.kiep.keyboard;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.util.Log;
 import android.widget.EditText;
 
+import androidx.preference.PreferenceManager;
+
 import java.util.Locale;
 
 public class TTS {
-    // Parameters used in the function
-    // - character to select speak
-    public static final String CHAR_SPEAK = "\\";
     private static final String TAG = TTS.class.getSimpleName();
 
     private TextToSpeech textToSpeech;
     private Analytics analytics = null;
+    private final String charSpeak;
 
     public TTS(Context context, GlobalKeyPressListener keyPressListener, final EditText editText) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         // Initialize TextToSpeech with the proper language setting (based on Locale)
         textToSpeech = new TextToSpeech(context,
@@ -42,14 +44,15 @@ public class TTS {
                     }
                 });
 
-        keyPressListener.addListener(CHAR_SPEAK, () -> {
+        charSpeak = preferences.getString(SettingsActivity.TTS_KEY, SettingsActivity.TTS_KEY_DEFAULT);
+        keyPressListener.addListener(charSpeak, () -> {
             speak(getTextToSpeak(editText));
             return true;
         });
     }
 
     public String getCharSpeak() {
-        return CHAR_SPEAK;
+        return charSpeak;
     }
 
     public void setAnalytics(Analytics analytics) {
