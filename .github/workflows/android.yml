@@ -19,10 +19,6 @@ jobs:
       with:
         java-version: 21
         distribution: 'temurin'
-    - name: Provide Firebase config
-      env:
-        FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
-      run: echo $FIREBASE_CONFIG > ./AndroidApp/app/google-services.json
     - name: Build debug APK
       working-directory: AndroidApp
       run: bash ./gradlew assembleDebug --stacktrace

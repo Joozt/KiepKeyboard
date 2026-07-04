@@ -28,7 +28,11 @@ render.experimental.xml
 *.keystore
 
 # Google Services (e.g. APIs or Firebase)
+# The real config comes from the FIREBASE_CONFIG secret in CI (release builds).
+# The committed debug copy is a dummy so local debug builds work; analytics is
+# intentionally dead in debug.
 google-services.json
+!app/src/debug/google-services.json
 
 # Android Profiling
 *.hprof
