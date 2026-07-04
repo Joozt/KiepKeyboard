@@ -51,6 +51,7 @@ public class FileEditorActivity extends AppCompatActivity {
     // remote edits make Dropbox create "conflicted copy" files. Durability
     // between file writes comes from the local mirror instead.
     private static final long SAFETY_SAVE_INTERVAL_MS = 5 * 60 * 1000;
+    private static final long IDLE_SAVE_DELAY_MS = 30 * 1000;
     private static final long MIRROR_DELAY_MS = 2000;
 
     private static final String MIRROR_PREFS = "FileEditor";
@@ -69,6 +70,11 @@ public class FileEditorActivity extends AppCompatActivity {
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable mirrorRunnable = this::writeMirror;
+    // Saving after a typing pause matters beyond convenience: a save in
+    // onPause alone lands in the provider cache while the device dozes
+    // (screen timeout), and the Dropbox app defers the actual upload until
+    // something wakes it. Saving while still awake starts the upload now.
+    private final Runnable idleSaveRunnable = this::saveFile;
     private final Runnable safetySaveRunnable = new Runnable() {
         @Override
         public void run() {
@@ -140,6 +146,8 @@ public class FileEditorActivity extends AppCompatActivity {
                 }
                 handler.removeCallbacks(mirrorRunnable);
                 handler.postDelayed(mirrorRunnable, MIRROR_DELAY_MS);
+                handler.removeCallbacks(idleSaveRunnable);
+                handler.postDelayed(idleSaveRunnable, IDLE_SAVE_DELAY_MS);
             }
 
             @Override
@@ -259,6 +267,7 @@ public class FileEditorActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         handler.removeCallbacks(mirrorRunnable);
+        handler.removeCallbacks(idleSaveRunnable);
         writeMirror();
         saveFile();
     }

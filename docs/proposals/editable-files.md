@@ -7,11 +7,12 @@ Date: 2026-05-31
 > **Implementation notes (Phase 1, 2026-07-04).** Built as designed, with these
 > resolutions from the implementation review:
 >
-> - **Autosave revised**: debounced-per-keystroke file writes caused Dropbox
->   "conflicted copy" files (every write is an upload; overlaps with remote
->   edits conflict). File writes now happen only on leaving the editor plus a
->   5-minute safety timer while dirty; a local SharedPreferences mirror
->   (2 s debounce, no sync traffic) covers crashes between writes.
+> - **Autosave revised**: file writes happen on leaving the editor, after
+>   30 s of typing inactivity (idle save — a pause-only save lands in the
+>   provider cache while the device dozes after screen timeout, and Dropbox
+>   defers the upload until woken), and from a 5-minute safety timer; a local
+>   SharedPreferences mirror (2 s debounce, no sync traffic) covers crashes
+>   between writes.
 > - **Conflict UX**: local edits win; the save proceeds with a snackbar notice.
 >   The remote version stays recoverable via Dropbox version history.
 > - **Navigation**: switching files is a caregiver action in Settings
