@@ -77,13 +77,30 @@ public class TTSTest {
     }
 
     @Test
-    public void cursorJustAfterTerminatorSpeaksTheSentenceItEnds() {
-        assertEquals("One", TTS.sentenceAt("One. Two.", 4));
+    public void cursorJustAfterTerminatorSpeaksTheFollowingSentence() {
+        assertEquals("Two", TTS.sentenceAt("One. Two.", 4));
     }
 
     @Test
     public void cursorOnMiddleLineSpeaksThatLine() {
         assertEquals("bb", TTS.sentenceAt("aa\nbb\ncc", 4));
+    }
+
+    @Test
+    public void cursorAtStartOfLineSpeaksThatLine() {
+        // Regression: the whitespace back-off used to drag the cursor across
+        // the line break into the previous sentence
+        assertEquals("bb", TTS.sentenceAt("aa\nbb", 3));
+    }
+
+    @Test
+    public void cursorAtStartOfLineWithLeadingSpaceSpeaksThatLine() {
+        assertEquals("bb", TTS.sentenceAt("aa \n bb", 4));
+    }
+
+    @Test
+    public void cursorOnEmptyLineFallsBackToPreviousSentence() {
+        assertEquals("aa", TTS.sentenceAt("aa\n\nbb", 3));
     }
 
     @Test

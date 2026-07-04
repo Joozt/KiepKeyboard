@@ -122,30 +122,43 @@ public class TTS {
     }
 
     /**
-     * Returns the sentence under the cursor, trimmed. A cursor at the end of
-     * a sentence (possibly behind its terminator or trailing whitespace)
-     * means that sentence, so a cursor at the end of the buffer yields the
+     * Returns the sentence under the cursor, trimmed. When nothing lies
+     * between the cursor and the next sentence terminator (end of buffer,
+     * trailing whitespace, an empty line), it falls back to the sentence
+     * ending at the cursor - so a cursor at the end of the buffer yields the
      * last sentence.
      */
     static String sentenceAt(String text, int cursor) {
         int position = (cursor < 0 || cursor > text.length()) ? text.length() : cursor;
 
-        // Step back over whitespace (covers trailing newlines) and one
-        // sentence terminator, so "end of sentence." means that sentence
-        while (position > 0 && Character.isWhitespace(text.charAt(position - 1))) {
-            position--;
+        // Scan forward to the end of the sentence the cursor is in; if that
+        // part has any content, the cursor is inside this sentence
+        int end = position;
+        boolean contentAhead = false;
+        while (end < text.length() && !isTerminator(text.charAt(end))) {
+            contentAhead |= !Character.isWhitespace(text.charAt(end));
+            end++;
         }
-        if (position > 0 && isTerminator(text.charAt(position - 1))) {
-            position--;
+
+        if (!contentAhead) {
+            // Nothing under or ahead of the cursor in this sentence: step
+            // back over whitespace and one terminator to the sentence that
+            // ends here, and find its end
+            while (position > 0 && Character.isWhitespace(text.charAt(position - 1))) {
+                position--;
+            }
+            if (position > 0 && isTerminator(text.charAt(position - 1))) {
+                position--;
+            }
+            end = position;
+            while (end < text.length() && !isTerminator(text.charAt(end))) {
+                end++;
+            }
         }
 
         int start = position;
         while (start > 0 && !isTerminator(text.charAt(start - 1))) {
             start--;
-        }
-        int end = position;
-        while (end < text.length() && !isTerminator(text.charAt(end))) {
-            end++;
         }
         return text.substring(start, end).trim();
     }
