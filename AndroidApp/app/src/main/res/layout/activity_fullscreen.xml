@@ -41,6 +41,17 @@
         android:progressTint="@color/colorAccent"
         android:scaleY="2" />
 
+    <!-- Visible while at least one external display is connected -->
+    <View
+        android:id="@+id/displayConnectedIndicator"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:layout_gravity="end|top"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/indicator_dot"
+        android:visibility="gone" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"

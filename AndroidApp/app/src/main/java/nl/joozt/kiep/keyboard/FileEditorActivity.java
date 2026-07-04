@@ -66,6 +66,7 @@ public class FileEditorActivity extends AppCompatActivity {
     private TTS tts;
     private YesNo yesNo;
     private BatteryStatus batteryStatus;
+    private ExternalDisplay externalDisplay;
 
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -137,6 +138,11 @@ public class FileEditorActivity extends AppCompatActivity {
 
         // A yes/no answer interrupts ongoing speech
         yesNo.setOnKeyPressed(tts::stopSpeaking);
+
+        externalDisplay = new ExternalDisplay(this, keyPressListener, editText);
+        View displayIndicator = findViewById(R.id.displayConnectedIndicator);
+        externalDisplay.setOnConnectionChanged(() -> displayIndicator.setVisibility(
+                externalDisplay.getConnectedCount() > 0 ? View.VISIBLE : View.GONE));
 
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -278,6 +284,7 @@ public class FileEditorActivity extends AppCompatActivity {
         tts.destroy();
         batteryStatus.destroy();
         yesNo.destroy();
+        externalDisplay.destroy();
         io.shutdown(); // Lets a queued save finish
         super.onDestroy();
     }
@@ -424,7 +431,9 @@ public class FileEditorActivity extends AppCompatActivity {
                         character.equals(fontSize.getIncrementKey()) ||
                         character.equals(fontSize.getDecrementKey()) ||
                         character.equals(tts.getSpeakKey()) ||
-                        character.equals(tts.getSpeakAllKey())) {
+                        character.equals(tts.getSpeakAllKey()) ||
+                        character.equals(externalDisplay.getSendKey()) ||
+                        character.equals(externalDisplay.getAttentionKey())) {
                     return null;
                 }
             }
