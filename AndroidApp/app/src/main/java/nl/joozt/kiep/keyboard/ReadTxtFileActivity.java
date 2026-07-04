@@ -71,6 +71,9 @@ public class ReadTxtFileActivity extends AppCompatActivity {
         yesNo = new YesNo(this, keyPressListener, editText);
         tts = new TTS(this, keyPressListener, editText);
 
+        // A yes/no answer interrupts ongoing speech
+        yesNo.setOnKeyPressed(tts::stopSpeaking);
+
         downloadFile(Objects.requireNonNull(getIntent().getStringExtra(EXTRA_URL)));
     }
 

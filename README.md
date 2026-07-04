@@ -20,7 +20,7 @@ Beyond plain typing, physical keys are repurposed as commands so the user can co
 ## Features
 
 - **Distraction-free fullscreen editor** — immersive landscape, no system bars; typed text is restored after the app is backgrounded.
-- **Yes / No** — dedicated keys play a yes/no sound and briefly flash the screen green/red (the flash can be disabled).
+- **Yes / No** — dedicated keys play a yes/no sound and briefly flash the screen green/red (the flash can be disabled); an answer interrupts ongoing text-to-speech.
 - **Text-to-speech** — speaks the sentence under the cursor (sentences end at `.`, `!`, `?`, or a new line; with the cursor at the end that's the last sentence) or the whole text, in the device language; speech rate and pitch are adjustable, and the feature can be turned off.
 - **Abbreviation expansion** — AutoHotKey-style snippets (e.g. `::kkb::KiepKeyboard`) expand as you type; Backspace undoes the last expansion.
 - **Adjustable font size** — shrink/grow hotkeys (10–400 sp), remembered between sessions.

@@ -53,6 +53,9 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         tts = new TTS(this, keyPressListener, editText);
         tts.setAnalytics(analytics);
 
+        // A yes/no answer interrupts ongoing speech
+        yesNo.setOnKeyPressed(tts::stopSpeaking);
+
         FrameLayout background = findViewById(R.id.content);
         ProgressBar progressBar = findViewById(R.id.progressBar);
         batteryStatus = new BatteryStatus(this, progressBar, background);

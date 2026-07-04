@@ -101,6 +101,12 @@ public class TTS {
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
+    public void stopSpeaking() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+        }
+    }
+
     public void destroy() {
         if (textToSpeech != null) {
             textToSpeech.stop();

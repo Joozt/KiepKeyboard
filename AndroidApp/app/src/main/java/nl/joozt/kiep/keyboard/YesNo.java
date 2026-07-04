@@ -19,6 +19,7 @@ public class YesNo {
     private final int noSoundId;
     private final int yesSoundId;
     private Analytics analytics = null;
+    private Runnable onKeyPressed = null;
     private final String noKey;
     private final String yesKey;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -42,6 +43,9 @@ public class YesNo {
 
         noKey = preferences.getString(SettingsActivity.NO_KEY, SettingsActivity.NO_KEY_DEFAULT);
         keyPressListener.addListener(noKey, () -> {
+            if (onKeyPressed != null) {
+                onKeyPressed.run();
+            }
             playSound(noSoundId);
             if (highlightEnabled) {
                 highlightBackground(context.getColor(R.color.no_red));
@@ -54,6 +58,9 @@ public class YesNo {
 
         yesKey = preferences.getString(SettingsActivity.YES_KEY, SettingsActivity.YES_KEY_DEFAULT);
         keyPressListener.addListener(yesKey, () -> {
+            if (onKeyPressed != null) {
+                onKeyPressed.run();
+            }
             playSound(yesSoundId);
             if (highlightEnabled) {
                 highlightBackground(context.getColor(R.color.yes_green));
@@ -67,6 +74,14 @@ public class YesNo {
 
     public void setAnalytics(Analytics analytics) {
         this.analytics = analytics;
+    }
+
+    /**
+     * Runs before the yes/no sound plays - lets the activity compose other
+     * features (e.g. interrupt ongoing speech) without YesNo knowing them.
+     */
+    public void setOnKeyPressed(Runnable onKeyPressed) {
+        this.onKeyPressed = onKeyPressed;
     }
 
     public void destroy() {
