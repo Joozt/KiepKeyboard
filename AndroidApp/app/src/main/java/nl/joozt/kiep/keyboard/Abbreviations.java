@@ -35,6 +35,22 @@ public class Abbreviations implements TextWatcher {
     }
 
     /**
+     * Suspends expansion while the caller replaces the buffer
+     * programmatically (e.g. loading a file) - otherwise a buffer ending in
+     * an abbreviation plus end character would expand on load.
+     */
+    public void pause() {
+        editText.removeTextChangedListener(this);
+    }
+
+    public void resume() {
+        undoInfo = null;
+        if (!abbreviations.isEmpty()) {
+            editText.addTextChangedListener(this);
+        }
+    }
+
+    /**
      * Parses AutoHotKey-style "::abbr::expansion" lines (one per line) into a
      * lookup map with lowercased abbreviation keys.
      */

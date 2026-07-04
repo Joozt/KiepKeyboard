@@ -37,6 +37,11 @@
     <string name="setting_battery_status_lowbat_level">Battery level for low battery warning</string>
     <string name="setting_abbreviations">Abbreviations</string>
     <string name="setting_abbreviations_description">Abbreviations in AutoHotKey syntax (::kkb::KiepKeyboard)</string>
+    <string name="file_load_failed">Unable to open the file</string>
+    <string name="file_read_only">File is read-only</string>
+    <string name="file_save_failed">Saving failed</string>
+    <string name="file_changed_elsewhere">File was changed elsewhere — your version was saved</string>
+
     <string name="setting_file">File</string>
     <string name="setting_choose_file">Choose file</string>
     <string name="no_file_chosen">No file chosen</string>

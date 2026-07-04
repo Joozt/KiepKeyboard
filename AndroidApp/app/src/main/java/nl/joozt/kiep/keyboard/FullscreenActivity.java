@@ -60,7 +60,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         ProgressBar progressBar = findViewById(R.id.progressBar);
         batteryStatus = new BatteryStatus(this, progressBar, background);
 
-        ReadTxtFileActivity.registerKeyPressListener(this, keyPressListener);
+        FileEditorActivity.registerKeyPressListener(this, keyPressListener);
 
         updateCheck = new UpdateCheck(this);
     }

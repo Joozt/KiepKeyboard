@@ -34,6 +34,12 @@
             android:theme="@style/Theme.KiepKeyboard.Fullscreen" />
 
         <activity
+            android:name=".FileEditorActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.KiepKeyboard.Fullscreen" />
+
+        <activity
             android:name=".SettingsActivity"
             android:exported="true"
             android:label="@string/title_activity_settings"
