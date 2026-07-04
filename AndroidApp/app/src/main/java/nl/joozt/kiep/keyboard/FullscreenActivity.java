@@ -143,6 +143,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         tts.destroy();
         batteryStatus.destroy();
         yesNo.destroy();
+        updateCheck.destroy();
         super.onDestroy();
     }
 }

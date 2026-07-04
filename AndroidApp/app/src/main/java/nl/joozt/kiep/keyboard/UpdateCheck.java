@@ -77,6 +77,12 @@ public class UpdateCheck implements OnSuccessListener<AppUpdateInfo>, InstallSta
         }
     }
 
+    public void destroy() {
+        // No-op when not registered; prevents a downloading update from
+        // keeping a destroyed activity reachable through the listener.
+        updateManager.unregisterListener(this);
+    }
+
     private void popupSnackbarForCompleteUpdate() {
         Snackbar snackbar = Snackbar.make(activity.findViewById(R.id.content), R.string.update_ready, Snackbar.LENGTH_INDEFINITE);
         snackbar.setAnchorView(R.id.progressBar);
