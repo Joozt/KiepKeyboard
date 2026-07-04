@@ -21,6 +21,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     private UpdateCheck updateCheck;
     private FontSize fontSize;
     private BatteryStatus batteryStatus;
+    private YesNo yesNo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +45,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         new Abbreviations(this, keyPressListener, editText);
 
         // Define instances of the yes/no functionality
-        YesNo yesNo = new YesNo(this, keyPressListener, editText);
+        yesNo = new YesNo(this, keyPressListener, editText);
         yesNo.setAnalytics(analytics);
 
         // Define instances of the TTS functionality
@@ -141,6 +142,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     protected void onDestroy() {
         tts.destroy();
         batteryStatus.destroy();
+        yesNo.destroy();
         super.onDestroy();
     }
 }

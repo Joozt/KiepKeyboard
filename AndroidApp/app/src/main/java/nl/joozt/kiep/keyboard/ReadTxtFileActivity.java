@@ -101,6 +101,7 @@ public class ReadTxtFileActivity extends AppCompatActivity {
     protected void onDestroy() {
         tts.destroy();
         batteryStatus.destroy();
+        yesNo.destroy();
         super.onDestroy();
     }
 

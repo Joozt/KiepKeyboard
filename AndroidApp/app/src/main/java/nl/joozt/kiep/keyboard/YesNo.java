@@ -72,6 +72,11 @@ public class YesNo {
         this.analytics = analytics;
     }
 
+    public void destroy() {
+        handler.removeCallbacksAndMessages(null);
+        soundPool.release();
+    }
+
     public String getNoKey() {
         return noKey;
     }
