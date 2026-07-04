@@ -37,6 +37,11 @@
     <string name="setting_battery_status_lowbat_level">Batterijniveau voor batterij bijna leeg</string>
     <string name="setting_abbreviations">Afkortingen</string>
     <string name="setting_abbreviations_description">Afkortingen in AutoHotKey formaat (::kkb::KiepKeyboard)</string>
+    <string name="setting_file">Bestand</string>
+    <string name="setting_choose_file">Kies bestand</string>
+    <string name="no_file_chosen">Geen bestand gekozen</string>
+    <string name="setting_open_file_key">Open bestand sneltoets</string>
+    <string name="setting_open_file_key_description">Gebruik de %s toets om het bestand te openen</string>
     <string name="setting_download_txt">Download en toon een .txt bestand (alleen lezen)</string>
     <string name="setting_download_txt_url">De URL naar een .txt bestand</string>
     <string name="setting_download_txt_url_description">Bijvoorbeeld een gedeelde link uit Dropbox</string>

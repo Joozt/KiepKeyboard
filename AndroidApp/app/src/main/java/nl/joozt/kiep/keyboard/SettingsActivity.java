@@ -2,11 +2,15 @@ package nl.joozt.kiep.keyboard;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
@@ -48,6 +52,10 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String NO_KEY_DEFAULT = "[";
     public static final String YES_KEY = "yes_key";
     public static final String YES_KEY_DEFAULT = "]";
+    public static final String FILE_URI = "file_uri";
+    public static final String FILE_URI_DEFAULT = "";
+    public static final String OPEN_FILE_KEY = "open_file_key";
+    public static final String OPEN_FILE_KEY_DEFAULT = "F2";
     public static final String BATTERY_STATUS = "battery_status";
     public static final boolean BATTERY_STATUS_DEFAULT = true;
     public static final String LOWBAT_WARNING = "lowbat_warning";
@@ -73,6 +81,21 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
+        private static final String CHOOSE_FILE = "choose_file";
+
+        private final ActivityResultLauncher<String[]> filePicker = registerForActivityResult(
+                new ActivityResultContracts.OpenDocument(), uri -> {
+                    if (uri == null) {
+                        return;
+                    }
+                    requireContext().getContentResolver().takePersistableUriPermission(uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    getPreferenceManager().getSharedPreferences().edit()
+                            .putString(FILE_URI, uri.toString())
+                            .apply();
+                    updateChooseFileSummary();
+                });
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             Context context = getPreferenceManager().getContext();
@@ -84,8 +107,10 @@ public class SettingsActivity extends AppCompatActivity {
             addFontSizeCategory(context, screen);
             addYesNoCategory(context, screen);
             addTtsCategory(context, screen);
+            addFileCategory(context, screen);
             addBatteryStatusCategory(context, screen);
             setPreferenceScreen(screen);
+            updateChooseFileSummary();
 
             screen.findPreference(NO_KEY).setDependency(ENABLE_YES_NO);
             screen.findPreference(YES_KEY).setDependency(ENABLE_YES_NO);
@@ -106,7 +131,7 @@ public class SettingsActivity extends AppCompatActivity {
          * command owns it.
          */
         private void preventDuplicateKeys() {
-            String[] keyPreferences = {DOWNLOAD_TXT_KEY, FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY, TTS_KEY, TTS_SPEAK_ALL_KEY};
+            String[] keyPreferences = {DOWNLOAD_TXT_KEY, FONT_SIZE_DECREMENT_KEY, FONT_SIZE_INCREMENT_KEY, NO_KEY, YES_KEY, TTS_KEY, TTS_SPEAK_ALL_KEY, OPEN_FILE_KEY};
             for (String keyPreference : keyPreferences) {
                 ListPreference preference = findPreference(keyPreference);
                 preference.setOnPreferenceChangeListener((changed, newValue) -> {
@@ -325,6 +350,53 @@ public class SettingsActivity extends AppCompatActivity {
             pitch.setMax(200);
             pitch.setShowSeekBarValue(true);
             category.addPreference(pitch);
+        }
+
+        private void addFileCategory(Context context, PreferenceScreen screen) {
+            PreferenceCategory category = new PreferenceCategory(context);
+            category.setKey("file");
+            category.setTitle(R.string.setting_file);
+            screen.addPreference(category);
+
+            Preference chooseFile = new Preference(context);
+            chooseFile.setKey(CHOOSE_FILE);
+            chooseFile.setTitle(R.string.setting_choose_file);
+            chooseFile.setOnPreferenceClickListener(preference -> {
+                filePicker.launch(new String[]{"text/*"});
+                return true;
+            });
+            category.addPreference(chooseFile);
+
+            ListPreference openFileKey = new ListPreference(context);
+            openFileKey.setKey(OPEN_FILE_KEY);
+            openFileKey.setTitle(R.string.setting_open_file_key);
+            openFileKey.setSummary(R.string.setting_open_file_key_description);
+            openFileKey.setEntries(functionKeys);
+            openFileKey.setEntryValues(functionKeys);
+            openFileKey.setDefaultValue(OPEN_FILE_KEY_DEFAULT);
+            category.addPreference(openFileKey);
+        }
+
+        private void updateChooseFileSummary() {
+            Preference chooseFile = findPreference(CHOOSE_FILE);
+            if (chooseFile != null) {
+                chooseFile.setSummary(fileDisplayName());
+            }
+        }
+
+        private CharSequence fileDisplayName() {
+            String uriString = getPreferenceManager().getSharedPreferences().getString(FILE_URI, FILE_URI_DEFAULT);
+            if (!uriString.isEmpty()) {
+                try (Cursor cursor = requireContext().getContentResolver().query(Uri.parse(uriString),
+                        new String[]{DocumentsContract.Document.COLUMN_DISPLAY_NAME}, null, null, null)) {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        return cursor.getString(0);
+                    }
+                } catch (Exception ignored) {
+                    // Fall through to the "no file" summary
+                }
+            }
+            return getString(R.string.no_file_chosen);
         }
 
         private void addBatteryStatusCategory(Context context, PreferenceScreen screen) {
