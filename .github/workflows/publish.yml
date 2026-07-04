@@ -43,11 +43,3 @@ jobs:
         with:
           name: app-release
           path: ${{ steps.sign-release.outputs.signedReleaseFile }}
-      # - name: Deploy to Internal Test
-      #   uses: r0adkll/upload-google-play@v1.1.3
-      #   with:
-      #     serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-      #     packageName: nl.joozt.kiep.keyboard
-      #     releaseFile: ${{ steps.sign-release.outputs.signedReleaseFile }}
-      #     track: internal
-      #     status: completed
