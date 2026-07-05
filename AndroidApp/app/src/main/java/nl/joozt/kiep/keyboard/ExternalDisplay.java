@@ -261,9 +261,14 @@ public class ExternalDisplay {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                 handler.post(() -> {
+                    Log.d(TAG, "Connection state " + newState + " (status " + status + ") for " + gatt.getDevice().getAddress());
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        gatt.requestMtu(247);
-                        gatt.discoverServices();
+                        // One outstanding GATT operation at a time: discovery
+                        // starts from onMtuChanged, not here
+                        if (!gatt.requestMtu(247)) {
+                            Log.w(TAG, "MTU request refused, discovering services directly");
+                            gatt.discoverServices();
+                        }
                     } else {
                         ready = false;
                         busy = false;
@@ -273,16 +278,25 @@ public class ExternalDisplay {
             }
 
             @Override
+            public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+                handler.post(() -> {
+                    Log.d(TAG, "MTU " + mtu + " (status " + status + "), discovering services");
+                    gatt.discoverServices();
+                });
+            }
+
+            @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 handler.post(() -> {
                     BluetoothGattService service = gatt.getService(SERVICE_UUID);
                     if (service == null) {
-                        Log.w(TAG, "Display lacks the KiepDisplay service");
+                        Log.w(TAG, "Display lacks the KiepDisplay service (status " + status + ")");
                         return;
                     }
                     text = service.getCharacteristic(TEXT_CHARACTERISTIC_UUID);
                     attention = service.getCharacteristic(ATTENTION_CHARACTERISTIC_UUID);
                     ready = text != null && attention != null;
+                    Log.d(TAG, "Services discovered, ready=" + ready + " for " + gatt.getDevice().getAddress());
                     notifyConnectionChanged();
                 });
             }
@@ -290,6 +304,9 @@ public class ExternalDisplay {
             @Override
             public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 handler.post(() -> {
+                    if (status != BluetoothGatt.GATT_SUCCESS) {
+                        Log.w(TAG, "Write failed with status " + status);
+                    }
                     busy = false;
                     pump();
                 });
@@ -313,13 +330,21 @@ public class ExternalDisplay {
             if (pendingText != null) {
                 text.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
                 text.setValue(pendingText);
+                Log.d(TAG, "Writing text frame '" + (char) pendingText[0] + "' (" + pendingText.length + " bytes)");
                 pendingText = null;
                 busy = gatt.writeCharacteristic(text);
+                if (!busy) {
+                    Log.w(TAG, "writeCharacteristic (text) refused");
+                }
             } else if (pendingAttention) {
                 attention.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
                 attention.setValue(new byte[]{1});
+                Log.d(TAG, "Writing attention");
                 pendingAttention = false;
                 busy = gatt.writeCharacteristic(attention);
+                if (!busy) {
+                    Log.w(TAG, "writeCharacteristic (attention) refused");
+                }
             }
         }
     }
