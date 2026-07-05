@@ -109,6 +109,15 @@ public String getSpeakAllKey() {
      * last sentence.
      */
     static String sentenceAt(String text, int cursor) {
+        return sentenceAt(text, cursor, false);
+    }
+
+    /**
+     * As {@link #sentenceAt(String, int)}; with includePunctuation the
+     * sentence keeps its trailing run of '.', '!' or '?' (for showing text
+     * rather than speaking it). A newline is a boundary, not punctuation.
+     */
+    static String sentenceAt(String text, int cursor, boolean includePunctuation) {
         int position = (cursor < 0 || cursor > text.length()) ? text.length() : cursor;
 
         // Scan forward to the end of the sentence the cursor is in; if that
@@ -122,12 +131,12 @@ public String getSpeakAllKey() {
 
         if (!contentAhead) {
             // Nothing under or ahead of the cursor in this sentence: step
-            // back over whitespace and one terminator to the sentence that
-            // ends here, and find its end
+            // back over whitespace and the terminator run ("Wait...") to the
+            // sentence that ends here, and find its end
             while (position > 0 && Character.isWhitespace(text.charAt(position - 1))) {
                 position--;
             }
-            if (position > 0 && isTerminator(text.charAt(position - 1))) {
+            while (position > 0 && isTerminator(text.charAt(position - 1))) {
                 position--;
             }
             end = position;
@@ -140,10 +149,23 @@ public String getSpeakAllKey() {
         while (start > 0 && !isTerminator(text.charAt(start - 1))) {
             start--;
         }
-        return text.substring(start, end).trim();
+
+        String sentence = text.substring(start, end).trim();
+        if (includePunctuation && !sentence.isEmpty()) {
+            int punctuation = end;
+            while (punctuation < text.length() && isPunctuation(text.charAt(punctuation))) {
+                punctuation++;
+            }
+            sentence += text.substring(end, punctuation);
+        }
+        return sentence;
     }
 
     private static boolean isTerminator(char character) {
-        return character == '.' || character == '!' || character == '?' || character == '\n';
+        return isPunctuation(character) || character == '\n';
+    }
+
+    private static boolean isPunctuation(char character) {
+        return character == '.' || character == '!' || character == '?';
     }
 }

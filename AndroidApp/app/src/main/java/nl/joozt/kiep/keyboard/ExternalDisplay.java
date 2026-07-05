@@ -120,7 +120,7 @@ public class ExternalDisplay {
                 String typed = Character.toString(s.charAt(start));
                 boolean boundary = word ? END_CHARS.contains(typed) : TERMINATORS.contains(typed);
                 if (boundary) {
-                    String text = TTS.sentenceAt(s.toString(), start);
+                    String text = TTS.sentenceAt(s.toString(), start, true);
                     if (!text.isEmpty()) {
                         sendFrame(TYPE_MESSAGE, text);
                         if (autoAttention) {
@@ -145,7 +145,7 @@ public class ExternalDisplay {
     }
 
     private void sendSentenceUnderCursor() {
-        String sentence = TTS.sentenceAt(editText.getText().toString(), editText.getSelectionStart());
+        String sentence = TTS.sentenceAt(editText.getText().toString(), editText.getSelectionStart(), true);
         if (sentence.isEmpty()) {
             return;
         }
