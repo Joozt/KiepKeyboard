@@ -49,7 +49,8 @@ public class ExternalDisplay {
     public static final UUID ATTENTION_CHARACTERISTIC_UUID = UUID.fromString("b1e60003-8f2a-4d0c-9e4b-5c3d2a1f0e9d");
 
     private static final String TAG = ExternalDisplay.class.getSimpleName();
-    private static final byte TYPE_MESSAGE = 'M';
+    private static final byte TYPE_MESSAGE = 'M'; // scrolls from the start when overflowing
+    private static final byte TYPE_WORD = 'W'; // word-append: receivers extend the shown text
     private static final byte TYPE_LIVE = 'L';
     private static final long LIVE_DEBOUNCE_MS = 100;
     private static final int LIVE_TAIL_CHARS = 200;
@@ -140,7 +141,7 @@ public class ExternalDisplay {
                 if (boundary) {
                     String text = TTS.sentenceAt(s.toString(), start, true);
                     if (!text.isEmpty()) {
-                        sendFrame(TYPE_MESSAGE, text);
+                        sendFrame(word ? TYPE_WORD : TYPE_MESSAGE, text);
                         if (autoAttention) {
                             sendAttention(false);
                         }
