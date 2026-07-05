@@ -20,11 +20,18 @@ and [docs/proposals/external-display.md](../docs/proposals/external-display.md)
   place.
 - **Attention** beeps and flashes the matrix white; the app's
   "Attention beeps/flashes" setting controls how many times (default once).
+- **Yes/no answers** (app setting "Show yes/no on displays", default off)
+  flash the matrix green/red for ~0.8 s, silently.
 - Word mode extensions of the current message continue an ongoing scroll
-  instead of restarting it.
+  instead of restarting it; when the held text stops fitting, scrolling
+  resumes from the current position. Hotkey/sentence messages always scroll
+  from the start.
+- Newlines in live text render as spaces (single-line matrix).
+- **Buttons**: left/right arrows step the matrix brightness through five
+  levels (persisted across power cycles); the middle button replays the
+  last message.
 - The display **clears on disconnect** and after **10 minutes** without
   input — old text never lingers on the table.
-- The **middle button replays** the last message.
 - Non-ASCII characters render as `?` (Phase 1).
 
 ## Flashing
@@ -42,7 +49,7 @@ not touch the bootloader.
 
 Constants at the top of `src/main.cpp`:
 
-- `BRIGHTNESS` (0–255, default 255)
+- `BRIGHTNESS_LEVELS` (button-stepped levels, default max)
 - `IDLE_CLEAR_MS` (default 10 min)
 - `SCROLL_STEP_MS` (scroll speed, default 40 ms/pixel)
 - Text color (default white; the heartbeat pixel stays accent blue)

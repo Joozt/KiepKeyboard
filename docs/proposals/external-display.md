@@ -55,16 +55,21 @@ internet/cloud transport will not be added.
   advertising the KiepDisplay service.
 - **Service**: one custom 128-bit service UUID (generated at implementation)
   with two characteristics:
-  - **Text** (write): value = 1 type byte (`M` = message, `L` = live buffer)
-    followed by UTF-8 text. The full value replaces the receiver's display
-    content. Values longer than the negotiated MTU use standard GATT long
-    writes; receivers render on write completion.
-  - **Attention** (write): a single byte carrying the repeat count (1–5);
-    the receiver plays its attention expression that many times.
-- **Prefix-extension hint**: an `M` frame whose text extends the currently
-  shown `M` text (word mode grows the message word by word) should not
-  restart an ongoing scroll — receivers keep the scroll position and let the
-  appended words follow, or update the held tail when not scrolling.
+  - **Text** (write): value = 1 type byte followed by UTF-8 text; the full
+    value replaces the receiver's display content. Types: `M` = message
+    (always presented from the start — scrolled when it doesn't fit), `W` =
+    word-append message (word mode; see extension rule), `L` = live typing
+    buffer (tail view). Values longer than the negotiated MTU use standard
+    GATT long writes; receivers render on write completion. Newlines are
+    legal; constrained receivers may render them as spaces.
+  - **Attention** (write): payload `[effect, count]`. Effect 1 = attention
+    (white flash + beep, repeated `count` times, 1–5); effect 2 = yes (green
+    flash); effect 3 = no (red flash) — the yes/no flash is longer and
+    silent, similar to the app's own highlight animation.
+- **Extension rule**: a `W` frame whose text extends the currently shown text
+  never restarts an ongoing scroll — the appended words follow at the end; a
+  held tail resumes scrolling from its current position when the text no
+  longer fits.
 - **Security**: BLE bonding (Just Works — receivers have no input surface);
   link encrypted; the app only connects to receivers it bonded via the in-app
   "Add display" flow.
