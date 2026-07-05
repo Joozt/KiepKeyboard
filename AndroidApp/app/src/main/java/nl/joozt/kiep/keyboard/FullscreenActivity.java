@@ -54,13 +54,16 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         tts = new TTS(this, keyPressListener, editText);
         tts.setAnalytics(analytics);
 
-        // A yes/no answer interrupts ongoing speech
-        yesNo.setOnKeyPressed(tts::stopSpeaking);
-
         externalDisplay = new ExternalDisplay(this, keyPressListener, editText);
         View displayIndicator = findViewById(R.id.displayConnectedIndicator);
         externalDisplay.setOnConnectionChanged(() -> displayIndicator.setVisibility(
                 externalDisplay.getConnectedCount() > 0 ? View.VISIBLE : View.GONE));
+
+        // A yes/no answer interrupts ongoing speech and flashes the displays
+        yesNo.setOnKeyPressed(yes -> {
+            tts.stopSpeaking();
+            externalDisplay.sendYesNo(yes);
+        });
 
         FrameLayout background = findViewById(R.id.content);
         ProgressBar progressBar = findViewById(R.id.progressBar);

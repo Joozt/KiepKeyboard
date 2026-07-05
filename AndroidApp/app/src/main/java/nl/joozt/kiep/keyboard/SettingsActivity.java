@@ -88,6 +88,8 @@ public class SettingsActivity extends AppCompatActivity {
     public static final int ATTENTION_REPEAT_DEFAULT = 1;
     public static final String ATTENTION_INTERVAL = "attention_interval";
     public static final int ATTENTION_INTERVAL_DEFAULT = 8;
+    public static final String ENABLE_YES_NO_FLASH = "enable_yes_no_flash";
+    public static final boolean ENABLE_YES_NO_FLASH_DEFAULT = false;
     public static final String EXTERNAL_DISPLAYS = "external_displays"; // StringSet of "address|name"
     public static final String FILE_URI = "file_uri";
     public static final String FILE_URI_DEFAULT = "";
@@ -173,6 +175,7 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(AUTO_ATTENTION).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(ATTENTION_REPEAT).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(ATTENTION_INTERVAL).setDependency(ENABLE_EXTERNAL_DISPLAY);
+            screen.findPreference(ENABLE_YES_NO_FLASH).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(ADD_DISPLAY).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(DISPLAYS).setDependency(ENABLE_EXTERNAL_DISPLAY);
 
@@ -475,6 +478,13 @@ public class SettingsActivity extends AppCompatActivity {
             attentionInterval.setSeekBarIncrement(1);
             attentionInterval.setShowSeekBarValue(true);
             category.addPreference(attentionInterval);
+
+            SwitchPreferenceCompat yesNoFlash = new SwitchPreferenceCompat(context);
+            yesNoFlash.setKey(ENABLE_YES_NO_FLASH);
+            yesNoFlash.setTitle(R.string.setting_yes_no_flash);
+            yesNoFlash.setSummary(R.string.setting_yes_no_flash_description);
+            yesNoFlash.setDefaultValue(ENABLE_YES_NO_FLASH_DEFAULT);
+            category.addPreference(yesNoFlash);
 
             Preference addDisplay = new Preference(context);
             addDisplay.setKey(ADD_DISPLAY);

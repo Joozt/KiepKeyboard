@@ -52,6 +52,10 @@ public class ExternalDisplay {
     private static final byte TYPE_MESSAGE = 'M'; // scrolls from the start when overflowing
     private static final byte TYPE_WORD = 'W'; // word-append: receivers extend the shown text
     private static final byte TYPE_LIVE = 'L';
+    // Attention characteristic payload: [effect, count]
+    private static final byte EFFECT_ATTENTION = 1; // white flash + beep, repeated count times
+    private static final byte EFFECT_YES = 2; // green flash
+    private static final byte EFFECT_NO = 3; // red flash
     private static final long LIVE_DEBOUNCE_MS = 100;
     private static final int LIVE_TAIL_CHARS = 200;
     private static final String END_CHARS = " .,\n?!:;"; // Word boundaries, same set as Abbreviations
@@ -66,6 +70,7 @@ public class ExternalDisplay {
     private final boolean autoAttention;
     private final int attentionRepeat;
     private final long attentionIntervalMillis;
+    private final boolean yesNoFlash;
     private Runnable onConnectionChanged = null;
     private String lastLiveText = null;
     private long lastAttentionMillis = 0;
@@ -81,12 +86,14 @@ public class ExternalDisplay {
             autoAttention = false;
             attentionRepeat = SettingsActivity.ATTENTION_REPEAT_DEFAULT;
             attentionIntervalMillis = 0;
+            yesNoFlash = false;
             return;
         }
 
         autoAttention = preferences.getBoolean(SettingsActivity.AUTO_ATTENTION, SettingsActivity.AUTO_ATTENTION_DEFAULT);
         attentionRepeat = preferences.getInt(SettingsActivity.ATTENTION_REPEAT, SettingsActivity.ATTENTION_REPEAT_DEFAULT);
         attentionIntervalMillis = preferences.getInt(SettingsActivity.ATTENTION_INTERVAL, SettingsActivity.ATTENTION_INTERVAL_DEFAULT) * 1000L;
+        yesNoFlash = preferences.getBoolean(SettingsActivity.ENABLE_YES_NO_FLASH, SettingsActivity.ENABLE_YES_NO_FLASH_DEFAULT);
 
         sendKey = preferences.getString(SettingsActivity.SEND_KEY, SettingsActivity.SEND_KEY_DEFAULT);
         keyPressListener.addListener(sendKey, () -> {
@@ -225,8 +232,23 @@ public class ExternalDisplay {
             return;
         }
         lastAttentionMillis = now;
+        sendEffect(new byte[]{EFFECT_ATTENTION, (byte) attentionRepeat});
+    }
+
+    /**
+     * Mirrors a yes/no answer as a green/red flash on the displays, when
+     * enabled in Settings. Wired by the activity, like the speech interrupt.
+     */
+    public void sendYesNo(boolean yes) {
+        if (!yesNoFlash) {
+            return;
+        }
+        sendEffect(new byte[]{yes ? EFFECT_YES : EFFECT_NO, 1});
+    }
+
+    private void sendEffect(byte[] payload) {
         for (Connection connection : connections) {
-            connection.submitAttention();
+            connection.submitEffect(payload);
         }
     }
 
@@ -281,7 +303,7 @@ public class ExternalDisplay {
         boolean ready = false;
         boolean busy = false;
         byte[] pendingText = null;
-        boolean pendingAttention = false;
+        byte[] pendingEffect = null;
 
         final BluetoothGattCallback callback = new BluetoothGattCallback() {
             @Override
@@ -344,8 +366,8 @@ public class ExternalDisplay {
             pump();
         }
 
-        void submitAttention() {
-            pendingAttention = true;
+        void submitEffect(byte[] payload) {
+            pendingEffect = payload;
             pump();
         }
 
@@ -362,11 +384,11 @@ public class ExternalDisplay {
                 if (!busy) {
                     Log.w(TAG, "writeCharacteristic (text) refused");
                 }
-            } else if (pendingAttention) {
+            } else if (pendingEffect != null) {
                 attention.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-                attention.setValue(new byte[]{(byte) attentionRepeat});
-                Log.d(TAG, "Writing attention");
-                pendingAttention = false;
+                attention.setValue(pendingEffect);
+                Log.d(TAG, "Writing effect " + pendingEffect[0]);
+                pendingEffect = null;
                 busy = gatt.writeCharacteristic(attention);
                 if (!busy) {
                     Log.w(TAG, "writeCharacteristic (attention) refused");

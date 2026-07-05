@@ -55,6 +55,8 @@
     <string name="setting_attention_repeat">Aantal piepjes/flitsen</string>
     <string name="setting_attention_interval">Aandacht interval (seconden)</string>
     <string name="setting_attention_interval_description">Minimale tijd tussen automatische aandacht in woord/zin-modus</string>
+    <string name="setting_yes_no_flash">Toon ja/nee op schermen</string>
+    <string name="setting_yes_no_flash_description">Laat de schermen groen/rood oplichten bij een ja/nee-antwoord</string>
     <string name="setting_add_display">Scherm toevoegen</string>
     <string name="setting_displays">Gekoppelde schermen</string>
     <string name="searching_displays">Zoeken naar schermen…</string>

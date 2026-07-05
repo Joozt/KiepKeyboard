@@ -55,6 +55,8 @@
     <string name="setting_attention_repeat">Attention beeps/flashes</string>
     <string name="setting_attention_interval">Attention interval (seconds)</string>
     <string name="setting_attention_interval_description">Minimum time between automatic attentions in word/sentence mode</string>
+    <string name="setting_yes_no_flash">Show yes/no on displays</string>
+    <string name="setting_yes_no_flash_description">Flash the displays green/red on a yes/no answer</string>
     <string name="setting_add_display">Add display</string>
     <string name="setting_displays">Paired displays</string>
     <string name="searching_displays">Searching for displays…</string>
