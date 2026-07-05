@@ -12,6 +12,8 @@ and [docs/proposals/external-display.md](../docs/proposals/external-display.md)
 
 - Advertises as **KiepDisplay**; pair it in the app via
   Settings → External display → Add display.
+- **Heartbeat pixel** (top-right, the app's accent blue): **blinking** =
+  powered and advertising, **solid** = the app is connected.
 - **Messages** (send hotkey, word/sentence mode) scroll across the matrix
   once, then hold the tail.
 - **Live typing** (character mode) shows the end of the buffer, updated in
@@ -27,6 +29,8 @@ and [docs/proposals/external-display.md](../docs/proposals/external-display.md)
 1. Install [PlatformIO](https://platformio.org/) (VS Code extension or CLI).
 2. Connect the TC001 over USB-C (onboard CH340 serial — no extra hardware).
 3. From this directory: `pio run -t upload`
+4. Debug logging: `pio device monitor` (115200) — logs advertising,
+   connect/disconnect, every received frame, attention, idle clears.
 
 Reflashing back to stock/AWTRIX later works the same way; this firmware does
 not touch the bootloader.
