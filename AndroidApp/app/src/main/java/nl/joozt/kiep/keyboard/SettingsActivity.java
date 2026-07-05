@@ -84,6 +84,8 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String ATTENTION_KEY_DEFAULT = "";
     public static final String AUTO_ATTENTION = "auto_attention";
     public static final boolean AUTO_ATTENTION_DEFAULT = false;
+    public static final String ATTENTION_REPEAT = "attention_repeat";
+    public static final int ATTENTION_REPEAT_DEFAULT = 1;
     public static final String EXTERNAL_DISPLAYS = "external_displays"; // StringSet of "address|name"
     public static final String FILE_URI = "file_uri";
     public static final String FILE_URI_DEFAULT = "";
@@ -167,6 +169,7 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(SEND_KEY).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(ATTENTION_KEY).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(AUTO_ATTENTION).setDependency(ENABLE_EXTERNAL_DISPLAY);
+            screen.findPreference(ATTENTION_REPEAT).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(ADD_DISPLAY).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(DISPLAYS).setDependency(ENABLE_EXTERNAL_DISPLAY);
 
@@ -448,6 +451,16 @@ public class SettingsActivity extends AppCompatActivity {
             autoAttention.setSummary(R.string.setting_auto_attention_description);
             autoAttention.setDefaultValue(AUTO_ATTENTION_DEFAULT);
             category.addPreference(autoAttention);
+
+            SeekBarPreference attentionRepeat = new SeekBarPreference(context);
+            attentionRepeat.setKey(ATTENTION_REPEAT);
+            attentionRepeat.setTitle(R.string.setting_attention_repeat);
+            attentionRepeat.setDefaultValue(ATTENTION_REPEAT_DEFAULT);
+            attentionRepeat.setMin(1);
+            attentionRepeat.setMax(5);
+            attentionRepeat.setSeekBarIncrement(1);
+            attentionRepeat.setShowSeekBarValue(true);
+            category.addPreference(attentionRepeat);
 
             Preference addDisplay = new Preference(context);
             addDisplay.setKey(ADD_DISPLAY);

@@ -52,6 +52,7 @@
     <string name="setting_attention_key_description">Gebruik de %s toets om de schermen te laten knipperen en piepen</string>
     <string name="setting_auto_attention">Aandacht na verzenden</string>
     <string name="setting_auto_attention_description">Automatisch aandacht vragen bij elk verzonden woord of elke zin</string>
+    <string name="setting_attention_repeat">Aantal piepjes/flitsen</string>
     <string name="setting_add_display">Scherm toevoegen</string>
     <string name="setting_displays">Gekoppelde schermen</string>
     <string name="searching_displays">Zoeken naar schermen…</string>

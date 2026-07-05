@@ -52,6 +52,7 @@
     <string name="setting_attention_key_description">Use the %s key to make the displays flash and beep</string>
     <string name="setting_auto_attention">Attention after send</string>
     <string name="setting_auto_attention_description">Automatically trigger attention on every sent word or sentence</string>
+    <string name="setting_attention_repeat">Attention beeps/flashes</string>
     <string name="setting_add_display">Add display</string>
     <string name="setting_displays">Paired displays</string>
     <string name="searching_displays">Searching for displays…</string>
