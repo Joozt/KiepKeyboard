@@ -64,6 +64,7 @@ public class ExternalDisplay {
     private final String attentionKey;
     private final boolean autoAttention;
     private Runnable onConnectionChanged = null;
+    private String lastLiveText = null;
 
     public ExternalDisplay(Context context, GlobalKeyPressListener keyPressListener, final EditText editText) {
         this.context = context;
@@ -107,7 +108,17 @@ public class ExternalDisplay {
             return;
         }
 
-        final Runnable sendLive = () -> sendFrame(TYPE_LIVE, tail(editText.getText().toString()));
+        final Runnable sendLive = () -> {
+            String live = tail(editText.getText().toString());
+            // Unchanged text sends nothing - crucially, a command keypress
+            // (typed and stripped in place) must not overwrite a scrolling
+            // message the send hotkey just put on the displays
+            if (live.equals(lastLiveText)) {
+                return;
+            }
+            lastLiveText = live;
+            sendFrame(TYPE_LIVE, live);
+        };
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
