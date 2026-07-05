@@ -52,9 +52,6 @@ public class ExternalDisplay {
     private static final byte TYPE_MESSAGE = 'M';
     private static final byte TYPE_LIVE = 'L';
     private static final long LIVE_DEBOUNCE_MS = 100;
-    // Auto-attention rate limit: word mode would otherwise beep on every
-    // word, often while the receiver is still scrolling the previous one
-    private static final long AUTO_ATTENTION_MIN_INTERVAL_MS = 8000;
     private static final int LIVE_TAIL_CHARS = 200;
     private static final String END_CHARS = " .,\n?!:;"; // Word boundaries, same set as Abbreviations
     private static final String TERMINATORS = ".!?\n"; // Sentence boundaries, same set as TTS
@@ -67,6 +64,7 @@ public class ExternalDisplay {
     private final String attentionKey;
     private final boolean autoAttention;
     private final int attentionRepeat;
+    private final long attentionIntervalMillis;
     private Runnable onConnectionChanged = null;
     private String lastLiveText = null;
     private long lastAttentionMillis = 0;
@@ -81,11 +79,13 @@ public class ExternalDisplay {
             attentionKey = "";
             autoAttention = false;
             attentionRepeat = SettingsActivity.ATTENTION_REPEAT_DEFAULT;
+            attentionIntervalMillis = 0;
             return;
         }
 
         autoAttention = preferences.getBoolean(SettingsActivity.AUTO_ATTENTION, SettingsActivity.AUTO_ATTENTION_DEFAULT);
         attentionRepeat = preferences.getInt(SettingsActivity.ATTENTION_REPEAT, SettingsActivity.ATTENTION_REPEAT_DEFAULT);
+        attentionIntervalMillis = preferences.getInt(SettingsActivity.ATTENTION_INTERVAL, SettingsActivity.ATTENTION_INTERVAL_DEFAULT) * 1000L;
 
         sendKey = preferences.getString(SettingsActivity.SEND_KEY, SettingsActivity.SEND_KEY_DEFAULT);
         keyPressListener.addListener(sendKey, () -> {
@@ -169,7 +169,9 @@ public class ExternalDisplay {
         }
         sendFrame(TYPE_MESSAGE, sentence);
         if (autoAttention) {
-            sendAttention(false);
+            // A deliberate hotkey send always gets its attention; only the
+            // continuous word/sentence streams are rate-limited
+            sendAttention(true);
         }
     }
 
@@ -218,7 +220,7 @@ public class ExternalDisplay {
 
     private void sendAttention(boolean force) {
         long now = System.currentTimeMillis();
-        if (!force && now - lastAttentionMillis < AUTO_ATTENTION_MIN_INTERVAL_MS) {
+        if (!force && now - lastAttentionMillis < attentionIntervalMillis) {
             return;
         }
         lastAttentionMillis = now;

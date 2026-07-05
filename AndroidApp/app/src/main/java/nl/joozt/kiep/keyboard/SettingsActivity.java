@@ -86,6 +86,8 @@ public class SettingsActivity extends AppCompatActivity {
     public static final boolean AUTO_ATTENTION_DEFAULT = false;
     public static final String ATTENTION_REPEAT = "attention_repeat";
     public static final int ATTENTION_REPEAT_DEFAULT = 1;
+    public static final String ATTENTION_INTERVAL = "attention_interval";
+    public static final int ATTENTION_INTERVAL_DEFAULT = 8;
     public static final String EXTERNAL_DISPLAYS = "external_displays"; // StringSet of "address|name"
     public static final String FILE_URI = "file_uri";
     public static final String FILE_URI_DEFAULT = "";
@@ -170,6 +172,7 @@ public class SettingsActivity extends AppCompatActivity {
             screen.findPreference(ATTENTION_KEY).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(AUTO_ATTENTION).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(ATTENTION_REPEAT).setDependency(ENABLE_EXTERNAL_DISPLAY);
+            screen.findPreference(ATTENTION_INTERVAL).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(ADD_DISPLAY).setDependency(ENABLE_EXTERNAL_DISPLAY);
             screen.findPreference(DISPLAYS).setDependency(ENABLE_EXTERNAL_DISPLAY);
 
@@ -461,6 +464,17 @@ public class SettingsActivity extends AppCompatActivity {
             attentionRepeat.setSeekBarIncrement(1);
             attentionRepeat.setShowSeekBarValue(true);
             category.addPreference(attentionRepeat);
+
+            SeekBarPreference attentionInterval = new SeekBarPreference(context);
+            attentionInterval.setKey(ATTENTION_INTERVAL);
+            attentionInterval.setTitle(R.string.setting_attention_interval);
+            attentionInterval.setSummary(R.string.setting_attention_interval_description);
+            attentionInterval.setDefaultValue(ATTENTION_INTERVAL_DEFAULT);
+            attentionInterval.setMin(1);
+            attentionInterval.setMax(30);
+            attentionInterval.setSeekBarIncrement(1);
+            attentionInterval.setShowSeekBarValue(true);
+            category.addPreference(attentionInterval);
 
             Preference addDisplay = new Preference(context);
             addDisplay.setKey(ADD_DISPLAY);
