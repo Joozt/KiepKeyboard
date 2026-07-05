@@ -27,7 +27,7 @@ static const uint8_t BUZZER_PIN = 15;
 static const uint8_t BUTTON_MIDDLE_PIN = 27; // active low
 static const int MATRIX_WIDTH = 32;
 static const int MATRIX_HEIGHT = 8;
-static const uint8_t BRIGHTNESS = 40; // 0-255; fixed in Phase 1
+static const uint8_t BRIGHTNESS = 255; // 0-255; fixed in Phase 1
 
 // --- KiepDisplay protocol -----------------------------------------------------
 static const char *DEVICE_NAME = "KiepDisplay";
@@ -55,6 +55,7 @@ static volatile size_t pendingLength = 0;
 static volatile char pendingType = 0;
 static volatile bool pendingFrame = false;
 static volatile bool attentionRequested = false;
+static volatile uint8_t attentionCount = 1;
 static volatile bool connected = false;
 static volatile bool disconnected = false;
 
@@ -131,9 +132,9 @@ static void beep(unsigned int frequency, unsigned long duration) {
     pinMode(BUZZER_PIN, INPUT_PULLDOWN); // prevents buzzer noise when idle
 }
 
-static void attention() {
-    Serial.println("[kiep] attention");
-    for (int i = 0; i < 2; i++) {
+static void attention(uint8_t count) {
+    Serial.printf("[kiep] attention x%u\n", count);
+    for (uint8_t i = 0; i < count; i++) {
         matrix.fillScreen(matrix.Color(255, 255, 255));
         matrix.show();
         beep(1400, 120);
@@ -168,6 +169,9 @@ class TextCallback : public NimBLECharacteristicCallbacks {
 
 class AttentionCallback : public NimBLECharacteristicCallbacks {
     void onWrite(NimBLECharacteristic *characteristic) override {
+        std::string value = characteristic->getValue();
+        uint8_t count = value.empty() ? 1 : (uint8_t) value[0];
+        attentionCount = constrain(count, 1, 5);
         attentionRequested = true;
     }
 };
@@ -194,7 +198,7 @@ void setup() {
     matrix.begin();
     matrix.setTextWrap(false);
     matrix.setBrightness(BRIGHTNESS);
-    matrix.setTextColor(matrix.Color(0, 180, 255)); // KiepKeyboard accent blue
+    matrix.setTextColor(matrix.Color(255, 255, 255)); // white text; heartbeat pixel stays blue
     clearDisplay();
 
     NimBLEDevice::init(DEVICE_NAME);
@@ -233,13 +237,25 @@ void loop() {
     }
 
     if (pendingFrame) {
-        currentText = toAscii(pendingBuffer, pendingLength);
+        String newText = toAscii(pendingBuffer, pendingLength);
+        // Word mode grows the message word by word: a frame that extends the
+        // current message keeps the running scroll (the appended words come
+        // along at the end) or just updates the held tail - no scroll restart
+        bool extension = currentType == 'M' && pendingType == 'M'
+                && currentText.length() > 0 && newText.startsWith(currentText);
+        currentText = newText;
         currentType = pendingType;
         pendingFrame = false;
         lastFrameMillis = now;
-        Serial.printf("[kiep] frame '%c' (%u bytes): %s\n",
-                      currentType, (unsigned) pendingLength, currentText.c_str());
-        if (currentType == 'M' && textPixelWidth(currentText) > MATRIX_WIDTH) {
+        Serial.printf("[kiep] frame '%c' (%u bytes%s): %s\n",
+                      currentType, (unsigned) pendingLength,
+                      extension ? ", extension" : "", currentText.c_str());
+        if (extension) {
+            if (!scrolling) {
+                drawText(tailPosition());
+            }
+            // While scrolling: keep scrollX, the longer text renders next step
+        } else if (currentType == 'M' && textPixelWidth(currentText) > MATRIX_WIDTH) {
             startScroll();
         } else {
             scrolling = false;
@@ -250,7 +266,7 @@ void loop() {
     if (attentionRequested) {
         attentionRequested = false;
         lastFrameMillis = now;
-        attention();
+        attention(attentionCount);
     }
 
     if (scrolling && now - lastScrollStep >= SCROLL_STEP_MS) {

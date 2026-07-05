@@ -18,7 +18,10 @@ and [docs/proposals/external-display.md](../docs/proposals/external-display.md)
   once, then hold the tail.
 - **Live typing** (character mode) shows the end of the buffer, updated in
   place.
-- **Attention** beeps and flashes the matrix white, twice.
+- **Attention** beeps and flashes the matrix white; the app's
+  "Attention beeps/flashes" setting controls how many times (default once).
+- Word mode extensions of the current message continue an ongoing scroll
+  instead of restarting it.
 - The display **clears on disconnect** and after **10 minutes** without
   input — old text never lingers on the table.
 - The **middle button replays** the last message.
@@ -39,10 +42,10 @@ not touch the bootloader.
 
 Constants at the top of `src/main.cpp`:
 
-- `BRIGHTNESS` (0–255, default 40)
+- `BRIGHTNESS` (0–255, default 255)
 - `IDLE_CLEAR_MS` (default 10 min)
 - `SCROLL_STEP_MS` (scroll speed, default 40 ms/pixel)
-- Text color (default the app's accent blue)
+- Text color (default white; the heartbeat pixel stays accent blue)
 - If text renders mirrored/interleaved on your unit, adjust the
   `NEO_MATRIX_*` orientation flags.
 

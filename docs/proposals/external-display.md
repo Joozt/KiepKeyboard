@@ -59,8 +59,12 @@ internet/cloud transport will not be added.
     followed by UTF-8 text. The full value replaces the receiver's display
     content. Values longer than the negotiated MTU use standard GATT long
     writes; receivers render on write completion.
-  - **Attention** (write): a single byte; receiver plays its attention
-    expression.
+  - **Attention** (write): a single byte carrying the repeat count (1–5);
+    the receiver plays its attention expression that many times.
+- **Prefix-extension hint**: an `M` frame whose text extends the currently
+  shown `M` text (word mode grows the message word by word) should not
+  restart an ongoing scroll — receivers keep the scroll position and let the
+  appended words follow, or update the held tail when not scrolling.
 - **Security**: BLE bonding (Just Works — receivers have no input surface);
   link encrypted; the app only connects to receivers it bonded via the in-app
   "Add display" flow.
