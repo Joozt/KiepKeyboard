@@ -10,6 +10,17 @@ Date: 2026-07-05
 > send-key = speak-key default; Settings exempts exactly that pair from
 > duplicate-key validation. Receiver firmware: `UlanziReceiver/` (PlatformIO).
 > Untested against real hardware at the time of writing.
+>
+> **Phase 2 notes (2026-07-24).** Android receive mode implemented as
+> `DisplayActivity` — its own launcher entry ("Kiep Display", accent-blue
+> icon variant). Foreground-only: advertises the KiepDisplay service while
+> visible, keeps the screen on at full brightness, clears on disconnect and
+> after the 10-minute idle timeout (Ulanzi parity). Deviations from the
+> Ulanzi rendering: no scrolling (text autosizes to fit the screen, so the
+> `M`/`W`/`L` types render identically) and attention plays the system
+> notification sound instead of a beep. Yes/no reuses the in-app yes/no
+> samples and green/red highlight. `BLUETOOTH_ADVERTISE` is requested when
+> the receiver is first opened; the keyboard side is unchanged.
 
 ## Background
 
