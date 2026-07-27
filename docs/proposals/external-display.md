@@ -21,6 +21,17 @@ Date: 2026-07-05
 > notification sound instead of a beep. Yes/no reuses the in-app yes/no
 > samples and green/red highlight. `BLUETOOTH_ADVERTISE` is requested when
 > the receiver is first opened; the keyboard side is unchanged.
+>
+> **Phase 2 polish (2026-07-27, after phone→tablet hardware test).** Autosize
+> rendering dropped: the size jumped between a short hotkey sentence and the
+> full live buffer. Now a fixed text size (SeekBar in Settings, receiver
+> side, default 80sp) with the newest text pinned at the bottom and older
+> lines moving off the top — the Ulanzi tail view with more rows. Attention
+> flash is amber (white drowned the white text) and all flashes use the
+> exact yes/no fade pattern from the phone: repeats fade in from the current
+> color and postpone the single fade-out. Battery bar added (same
+> `BatteryStatus` + bar as the keyboard screen). Launcher entry renamed to
+> "KiepKeyboard Display" with the standard app icon.
 
 ## Background
 

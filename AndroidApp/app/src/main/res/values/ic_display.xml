@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- API 24/25 have no adaptive icons; fall back to the app icon there -->
-<resources>
-    <item name="ic_display" type="mipmap">@mipmap/ic_launcher</item>
-</resources>

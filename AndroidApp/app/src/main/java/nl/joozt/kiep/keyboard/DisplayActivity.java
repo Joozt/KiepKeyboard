@@ -17,8 +17,10 @@ import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.media.SoundPool;
@@ -28,8 +30,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelUuid;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,6 +44,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.preference.PreferenceManager;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -65,8 +71,10 @@ public class DisplayActivity extends AppCompatActivity {
     private static final byte EFFECT_NO = 3;
     private static final long IDLE_CLEAR_MS = 10 * 60 * 1000L; // parity with the Ulanzi receiver
     private static final long HEARTBEAT_TOGGLE_MS = 500;
-    private static final long ATTENTION_FLASH_MS = 300;
-    private static final long ATTENTION_PERIOD_MS = 700;
+    // Highlight timings identical to YesNo.highlightBackground on the phone
+    private static final long FLASH_FADE_MS = 250;
+    private static final long FLASH_RESET_DELAY_MS = 600;
+    private static final long ATTENTION_PERIOD_MS = 850; // fade-in + hold + fade-out per repeat
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Set<String> connectedDevices = new HashSet<>();
@@ -75,9 +83,13 @@ public class DisplayActivity extends AppCompatActivity {
     private final Map<UUID, ByteArrayOutputStream> preparedWrites = new HashMap<>();
 
     private View root;
+    private View flash;
+    private ScrollView scroll;
     private TextView text;
     private TextView status;
     private View heartbeat;
+    private BatteryStatus batteryStatus;
+    private Runnable resetFlashRunnable = null;
     private SoundPool soundPool;
     private int yesSoundId;
     private int noSoundId;
@@ -106,9 +118,20 @@ public class DisplayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display);
         root = findViewById(R.id.displayRoot);
+        flash = findViewById(R.id.displayFlash);
+        scroll = findViewById(R.id.displayScroll);
         text = findViewById(R.id.displayText);
         status = findViewById(R.id.displayStatus);
         heartbeat = findViewById(R.id.displayHeartbeat);
+
+        // Fixed size, set on the receiver device: autosizing made the size
+        // jump between a short hotkey sentence and the full live buffer
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+                preferences.getInt(SettingsActivity.DISPLAY_TEXT_SIZE, SettingsActivity.DISPLAY_TEXT_SIZE_DEFAULT));
+
+        ProgressBar progressBar = findViewById(R.id.progressBar);
+        batteryStatus = new BatteryStatus(this, progressBar, root);
 
         // A display on the table: screen stays on at full brightness, no bars
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -153,6 +176,7 @@ public class DisplayActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        batteryStatus.destroy();
         soundPool.release();
     }
 
@@ -365,6 +389,9 @@ public class DisplayActivity extends AppCompatActivity {
         Log.d(TAG, "Frame (" + message.length() + " chars)");
         text.setText(message);
         status.setText("");
+        // Newest text stays visible at the bottom; older lines move off the
+        // top, like the Ulanzi tail view with more rows
+        scroll.post(() -> scroll.fullScroll(View.FOCUS_DOWN));
         handler.removeCallbacks(idleClear);
         handler.postDelayed(idleClear, IDLE_CLEAR_MS); // Privacy: never keep old text on the table
     }
@@ -381,11 +408,10 @@ public class DisplayActivity extends AppCompatActivity {
         Log.d(TAG, "Attention x" + count);
         for (int i = 0; i < count; i++) {
             handler.postDelayed(() -> {
-                root.setBackgroundColor(Color.WHITE);
+                highlight(getColor(R.color.battery_low)); // Amber: white would drown the white text
                 if (attentionSound != null) {
                     attentionSound.play();
                 }
-                handler.postDelayed(() -> root.setBackgroundColor(Color.BLACK), ATTENTION_FLASH_MS);
             }, i * ATTENTION_PERIOD_MS);
         }
     }
@@ -394,8 +420,26 @@ public class DisplayActivity extends AppCompatActivity {
     private void answerFlash(boolean yes) {
         Log.d(TAG, "Answer flash: " + (yes ? "yes" : "no"));
         soundPool.play(yes ? yesSoundId : noSoundId, 1, 1, 1, 0, 1);
-        int color = getColor(yes ? R.color.yes_green : R.color.no_red);
-        YesNo.animateBackgroundColorManually(root, Color.BLACK, color, 250);
-        handler.postDelayed(() -> YesNo.animateBackgroundColorManually(root, color, Color.BLACK, 250), 600);
+        highlight(getColor(yes ? R.color.yes_green : R.color.no_red));
+    }
+
+    /**
+     * Fade the flash overlay to a color and back, exactly like
+     * YesNo.highlightBackground on the phone: a repeat fades in from the
+     * current color and postpones the single fade-out until after the last
+     * one - no flashing in between.
+     */
+    private void highlight(int highlightColor) {
+        int currentColor = Color.TRANSPARENT;
+        if (flash.getBackground() instanceof ColorDrawable) {
+            currentColor = ((ColorDrawable) flash.getBackground()).getColor();
+        }
+        YesNo.animateBackgroundColorManually(flash, currentColor, highlightColor, FLASH_FADE_MS);
+
+        if (resetFlashRunnable != null) {
+            handler.removeCallbacks(resetFlashRunnable);
+        }
+        resetFlashRunnable = () -> YesNo.animateBackgroundColorManually(flash, highlightColor, Color.TRANSPARENT, FLASH_FADE_MS);
+        handler.postDelayed(resetFlashRunnable, FLASH_RESET_DELAY_MS);
     }
 }

@@ -1,22 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Same layering as activity_fullscreen: the root background belongs to
+     BatteryStatus (low-battery tint), the flash overlay to the yes/no and
+     attention highlights, mirroring the editText background on the phone -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/displayRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black">
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/displayText"
+    <View
+        android:id="@+id/displayFlash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Fixed text size; the newest text stays pinned at the bottom and old
+         lines move off the top, like the Ulanzi tail view with more rows -->
+    <ScrollView
+        android:id="@+id/displayScroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:padding="24dp"
-        android:textColor="@android:color/white"
-        app:autoSizeMaxTextSize="240sp"
-        app:autoSizeMinTextSize="24sp"
-        app:autoSizeStepGranularity="4sp"
-        app:autoSizeTextType="uniform" />
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <TextView
+            android:id="@+id/displayText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="0dp"
+            android:gravity="bottom|center_horizontal"
+            android:padding="24dp"
+            android:textColor="@android:color/white" />
+    </ScrollView>
 
     <TextView
         android:id="@+id/displayStatus"
@@ -37,4 +51,15 @@
         android:background="@drawable/indicator_dot"
         android:visibility="gone" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:layout_gravity="bottom"
+        android:elevation="7dp"
+        android:progress="0"
+        android:progressBackgroundTint="@android:color/transparent"
+        android:progressTint="@color/colorAccent"
+        android:scaleY="2" />
 </FrameLayout>

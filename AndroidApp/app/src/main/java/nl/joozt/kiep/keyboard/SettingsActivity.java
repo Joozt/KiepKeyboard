@@ -91,6 +91,8 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String ENABLE_YES_NO_FLASH = "enable_yes_no_flash";
     public static final boolean ENABLE_YES_NO_FLASH_DEFAULT = false;
     public static final String EXTERNAL_DISPLAYS = "external_displays"; // StringSet of "address|name"
+    public static final String DISPLAY_TEXT_SIZE = "display_text_size"; // Receiver side (DisplayActivity), in sp
+    public static final int DISPLAY_TEXT_SIZE_DEFAULT = 80;
     public static final String FILE_URI = "file_uri";
     public static final String FILE_URI_DEFAULT = "";
     public static final String OPEN_FILE_KEY = "open_file_key";
@@ -156,6 +158,7 @@ public class SettingsActivity extends AppCompatActivity {
             addYesNoCategory(context, screen);
             addTtsCategory(context, screen);
             addExternalDisplayCategory(context, screen);
+            addDisplayCategory(context, screen);
             addFileCategory(context, screen);
             addBatteryStatusCategory(context, screen);
             setPreferenceScreen(screen);
@@ -503,6 +506,25 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
             category.addPreference(displays);
+        }
+
+        // Receiver side: settings for this device acting as a KiepDisplay
+        // (the "KiepKeyboard Display" launcher entry), independent of the
+        // sender settings above
+        private void addDisplayCategory(Context context, PreferenceScreen screen) {
+            PreferenceCategory category = new PreferenceCategory(context);
+            category.setTitle(R.string.setting_display);
+            screen.addPreference(category);
+
+            SeekBarPreference textSize = new SeekBarPreference(context);
+            textSize.setKey(DISPLAY_TEXT_SIZE);
+            textSize.setTitle(R.string.setting_display_text_size);
+            textSize.setDefaultValue(DISPLAY_TEXT_SIZE_DEFAULT);
+            textSize.setMin(30);
+            textSize.setMax(150);
+            textSize.setSeekBarIncrement(10);
+            textSize.setShowSeekBarValue(true);
+            category.addPreference(textSize);
         }
 
         private void addDisplayClicked() {
