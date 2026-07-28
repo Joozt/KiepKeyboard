@@ -22,6 +22,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
     private FontSize fontSize;
     private BatteryStatus batteryStatus;
     private YesNo yesNo;
+    private ExternalDisplay externalDisplay;
     private boolean settingsChanged = false;
 
     @Override
@@ -53,8 +54,16 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         tts = new TTS(this, keyPressListener, editText);
         tts.setAnalytics(analytics);
 
-        // A yes/no answer interrupts ongoing speech
-        yesNo.setOnKeyPressed(tts::stopSpeaking);
+        externalDisplay = new ExternalDisplay(this, keyPressListener, editText);
+        View displayIndicator = findViewById(R.id.displayConnectedIndicator);
+        externalDisplay.setOnConnectionChanged(() -> displayIndicator.setVisibility(
+                externalDisplay.getConnectedCount() > 0 ? View.VISIBLE : View.GONE));
+
+        // A yes/no answer interrupts ongoing speech and flashes the displays
+        yesNo.setOnKeyPressed(yes -> {
+            tts.stopSpeaking();
+            externalDisplay.sendYesNo(yes);
+        });
 
         FrameLayout background = findViewById(R.id.content);
         ProgressBar progressBar = findViewById(R.id.progressBar);
@@ -163,6 +172,7 @@ public class FullscreenActivity extends AppCompatActivity implements SharedPrefe
         tts.destroy();
         batteryStatus.destroy();
         yesNo.destroy();
+        externalDisplay.destroy();
         updateCheck.destroy();
         super.onDestroy();
     }

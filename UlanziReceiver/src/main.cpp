@@ -1,0 +1,385 @@
+// KiepDisplay receiver for the Ulanzi TC001 pixel clock.
+//
+// BLE peripheral for the KiepKeyboard app (docs/proposals/external-display.md
+// and ulanzi-receiver.md in the app repository). No WiFi, no server: the app
+// connects directly over BLE and writes stateless frames.
+//
+//   Text characteristic:      1 type byte + UTF-8 text
+//     'M' = message to read   -> scroll once, then hold the tail
+//     'L' = live typing buffer -> static tail view, updated in place
+//   Attention characteristic: any write -> beep + white flash
+//
+// Heartbeat pixel (top-right, KiepKeyboard accent blue): blinking = powered
+// and advertising, solid = app connected. The display clears on disconnect
+// and after 10 minutes without frames. The middle button replays the last
+// message. Serial debug logging on 115200.
+//
+// Hardware map per https://github.com/rroels/ulanzi_tc001_hardware
+
+#include <Arduino.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_NeoMatrix.h>
+#include <NimBLEDevice.h>
+#include <Preferences.h>
+
+// --- Hardware ---------------------------------------------------------------
+static const uint8_t MATRIX_PIN = 32;
+static const uint8_t BUZZER_PIN = 15;
+static const uint8_t BUTTON_LEFT_PIN = 26; // active low; brightness down
+static const uint8_t BUTTON_MIDDLE_PIN = 27; // active low; replay
+static const uint8_t BUTTON_RIGHT_PIN = 14; // active low; brightness up
+static const int MATRIX_WIDTH = 32;
+static const int MATRIX_HEIGHT = 8;
+
+// Brightness levels stepped by the arrow buttons; the level survives a
+// power cycle (NVS)
+static const uint8_t BRIGHTNESS_LEVELS[] = {16, 48, 96, 160, 255};
+static const int BRIGHTNESS_LEVEL_COUNT = sizeof(BRIGHTNESS_LEVELS) / sizeof(BRIGHTNESS_LEVELS[0]);
+static const int BRIGHTNESS_LEVEL_DEFAULT = BRIGHTNESS_LEVEL_COUNT - 1; // max
+
+// --- KiepDisplay protocol -----------------------------------------------------
+static const char *DEVICE_NAME = "KiepDisplay";
+static const char *SERVICE_UUID = "b1e60001-8f2a-4d0c-9e4b-5c3d2a1f0e9d";
+static const char *TEXT_CHAR_UUID = "b1e60002-8f2a-4d0c-9e4b-5c3d2a1f0e9d";
+static const char *ATTENTION_CHAR_UUID = "b1e60003-8f2a-4d0c-9e4b-5c3d2a1f0e9d";
+
+// --- Behavior ----------------------------------------------------------------
+static const unsigned long IDLE_CLEAR_MS = 10UL * 60UL * 1000UL;
+static const unsigned long SCROLL_STEP_MS = 40;
+static const unsigned long HEARTBEAT_TOGGLE_MS = 500;
+static const int CHAR_WIDTH = 6; // classic GFX 5x7 font + 1px spacing
+static const uint8_t BUZZER_CHANNEL = 0;
+
+// If the text renders mirrored or interleaved on your unit, adjust the
+// NEO_MATRIX_* flags below (serpentine: even rows left-to-right).
+Adafruit_NeoMatrix matrix(MATRIX_WIDTH, MATRIX_HEIGHT, MATRIX_PIN,
+                          NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG,
+                          NEO_GRB + NEO_KHZ800);
+
+// Frame handoff: the BLE host task writes, loop() reads. Single writer,
+// single reader, guarded by the pendingFrame flag.
+static char pendingBuffer[256];
+static volatile size_t pendingLength = 0;
+static volatile char pendingType = 0;
+static volatile bool pendingFrame = false;
+// Attention payload: [effect, count]; effect 1 = white flash + beep (count
+// repeats), 2 = yes (green flash), 3 = no (red flash)
+static volatile uint8_t pendingEffect = 0;
+static volatile uint8_t pendingEffectCount = 1;
+static volatile bool connected = false;
+static volatile bool disconnected = false;
+
+// Display state (loop() only)
+static String currentText;
+static char currentType = 0;
+static int currentX = 0;
+static int scrollX = MATRIX_WIDTH;
+static bool scrolling = false;
+static unsigned long lastScrollStep = 0;
+static unsigned long lastFrameMillis = 0;
+static bool middleWasDown = false;
+static bool leftWasDown = false;
+static bool rightWasDown = false;
+static bool heartbeatOn = false;
+static unsigned long lastHeartbeatToggle = 0;
+static bool wasConnected = false;
+static int brightnessLevel = BRIGHTNESS_LEVEL_DEFAULT;
+static Preferences preferences;
+
+// Strips UTF-8 down to ASCII: multi-byte sequences become '?'. Newlines
+// become spaces - the GFX print would otherwise advance a full 8px line and
+// render everything off-panel.
+static String toAscii(const char *bytes, size_t length) {
+    String result;
+    result.reserve(length);
+    for (size_t i = 0; i < length; i++) {
+        uint8_t b = (uint8_t) bytes[i];
+        if (b == '\n' || b == '\r') {
+            result += ' ';
+        } else if (b < 0x80) {
+            result += (char) b;
+        } else if (b >= 0xC0) {
+            result += '?'; // lead byte of a multi-byte sequence
+        } // continuation bytes are skipped
+    }
+    return result;
+}
+
+static int textPixelWidth(const String &text) {
+    return text.length() * CHAR_WIDTH;
+}
+
+// Composes the full frame: current text plus the heartbeat pixel
+// (blinking while advertising, solid while the app is connected)
+static void render() {
+    matrix.fillScreen(0);
+    if (currentText.length() > 0) {
+        matrix.setCursor(currentX, 0);
+        matrix.print(currentText);
+    }
+    if (connected || heartbeatOn) {
+        matrix.drawPixel(MATRIX_WIDTH - 1, 0, matrix.Color(51, 181, 229)); // #33B5E5, app accent
+    }
+    matrix.show();
+}
+
+static void drawText(int x) {
+    currentX = x;
+    render();
+}
+
+// Show the end of the text when it is wider than the matrix
+static int tailPosition() {
+    int width = textPixelWidth(currentText);
+    return width <= MATRIX_WIDTH ? 0 : MATRIX_WIDTH - width;
+}
+
+static void startScroll() {
+    scrolling = true;
+    scrollX = MATRIX_WIDTH;
+    lastScrollStep = 0;
+}
+
+static void beep(unsigned int frequency, unsigned long duration) {
+    ledcSetup(BUZZER_CHANNEL, frequency, 8);
+    ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);
+    ledcWriteTone(BUZZER_CHANNEL, frequency);
+    delay(duration);
+    ledcWriteTone(BUZZER_CHANNEL, 0);
+    ledcDetachPin(BUZZER_PIN);
+    pinMode(BUZZER_PIN, INPUT_PULLDOWN); // prevents buzzer noise when idle
+}
+
+static void attention(uint8_t count) {
+    Serial.printf("[kiep] attention x%u\n", count);
+    for (uint8_t i = 0; i < count; i++) {
+        matrix.fillScreen(matrix.Color(255, 255, 255));
+        matrix.show();
+        beep(1400, 120);
+        matrix.fillScreen(0);
+        matrix.show();
+        delay(80);
+    }
+    render(); // Restore whatever was showing
+}
+
+// Yes/no answer: a longer silent color flash, similar in duration to the
+// highlight animation in the app
+static void answerFlash(bool yes) {
+    Serial.printf("[kiep] answer flash: %s\n", yes ? "yes" : "no");
+    matrix.fillScreen(yes ? matrix.Color(0, 152, 0) : matrix.Color(190, 0, 0));
+    matrix.show();
+    delay(800);
+    render();
+}
+
+static void applyBrightness() {
+    matrix.setBrightness(BRIGHTNESS_LEVELS[brightnessLevel]);
+    Serial.printf("[kiep] brightness %u\n", BRIGHTNESS_LEVELS[brightnessLevel]);
+    preferences.putInt("brightness", brightnessLevel);
+    render();
+}
+
+static void clearDisplay() {
+    currentText = "";
+    currentType = 0;
+    scrolling = false;
+    render();
+}
+
+// --- BLE ----------------------------------------------------------------------
+class TextCallback : public NimBLECharacteristicCallbacks {
+    void onWrite(NimBLECharacteristic *characteristic) override {
+        std::string value = characteristic->getValue();
+        if (value.empty() || pendingFrame) {
+            return; // a pending frame is still being picked up; latest-wins is handled app-side
+        }
+        size_t length = min(value.size() - 1, sizeof(pendingBuffer));
+        memcpy(pendingBuffer, value.data() + 1, length);
+        pendingLength = length;
+        pendingType = value[0];
+        pendingFrame = true;
+    }
+};
+
+class AttentionCallback : public NimBLECharacteristicCallbacks {
+    void onWrite(NimBLECharacteristic *characteristic) override {
+        std::string value = characteristic->getValue();
+        if (value.empty()) {
+            return;
+        }
+        uint8_t count = value.size() > 1 ? (uint8_t) value[1] : 1;
+        pendingEffectCount = constrain(count, 1, 5);
+        pendingEffect = (uint8_t) value[0];
+    }
+};
+
+class ServerCallback : public NimBLEServerCallbacks {
+    void onConnect(NimBLEServer *server) override {
+        connected = true;
+    }
+
+    void onDisconnect(NimBLEServer *server) override {
+        connected = false;
+        disconnected = true; // loop() clears the display (privacy)
+        NimBLEDevice::startAdvertising();
+    }
+};
+
+void setup() {
+    Serial.begin(115200);
+    Serial.println("[kiep] KiepDisplay receiver starting");
+
+    pinMode(BUZZER_PIN, INPUT_PULLDOWN);
+    pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
+    pinMode(BUTTON_MIDDLE_PIN, INPUT_PULLUP);
+    pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
+
+    preferences.begin("kiepdisplay", false);
+    brightnessLevel = constrain(preferences.getInt("brightness", BRIGHTNESS_LEVEL_DEFAULT),
+                                0, BRIGHTNESS_LEVEL_COUNT - 1);
+
+    matrix.begin();
+    matrix.setTextWrap(false);
+    matrix.setBrightness(BRIGHTNESS_LEVELS[brightnessLevel]);
+    matrix.setTextColor(matrix.Color(255, 255, 255)); // white text; heartbeat pixel stays blue
+    clearDisplay();
+
+    NimBLEDevice::init(DEVICE_NAME);
+    NimBLEDevice::setSecurityAuth(true, false, true); // bonding, no MITM, secure connections
+
+    NimBLEServer *server = NimBLEDevice::createServer();
+    server->setCallbacks(new ServerCallback());
+
+    NimBLEService *service = server->createService(SERVICE_UUID);
+    NimBLECharacteristic *text = service->createCharacteristic(
+            TEXT_CHAR_UUID, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR);
+    text->setCallbacks(new TextCallback());
+    NimBLECharacteristic *attentionCharacteristic = service->createCharacteristic(
+            ATTENTION_CHAR_UUID, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR);
+    attentionCharacteristic->setCallbacks(new AttentionCallback());
+    service->start();
+
+    NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
+    advertising->addServiceUUID(SERVICE_UUID);
+    advertising->start();
+    Serial.println("[kiep] advertising as KiepDisplay");
+}
+
+void loop() {
+    unsigned long now = millis();
+
+    if (connected != wasConnected) {
+        wasConnected = connected;
+        Serial.println(connected ? "[kiep] app connected" : "[kiep] app disconnected");
+        render();
+    }
+
+    if (disconnected) {
+        disconnected = false;
+        clearDisplay();
+    }
+
+    if (pendingFrame) {
+        String newText = toAscii(pendingBuffer, pendingLength);
+        // Word frames ('W') grow the message word by word: an extension of
+        // the shown text never restarts a scroll - a running scroll continues
+        // into the appended words, a held tail resumes scrolling from its
+        // current position when the text no longer fits. Messages ('M', the
+        // send hotkey and sentence mode) always scroll from the start.
+        bool extension = pendingType == 'W'
+                && currentText.length() > 0 && newText.startsWith(currentText);
+        currentText = newText;
+        currentType = pendingType;
+        pendingFrame = false;
+        lastFrameMillis = now;
+        Serial.printf("[kiep] frame '%c' (%u bytes%s): %s\n",
+                      currentType, (unsigned) pendingLength,
+                      extension ? ", extension" : "", currentText.c_str());
+        bool overflow = textPixelWidth(currentText) > MATRIX_WIDTH;
+        if (extension) {
+            if (scrolling) {
+                // Keep scrollX; the longer text renders on the next step
+            } else if (overflow) {
+                // Resume scrolling from where the tail was held
+                scrolling = true;
+                scrollX = currentX;
+                lastScrollStep = 0;
+            } else {
+                drawText(tailPosition());
+            }
+        } else if ((currentType == 'M' || currentType == 'W') && overflow) {
+            startScroll();
+        } else {
+            scrolling = false;
+            drawText(tailPosition());
+        }
+    }
+
+    if (pendingEffect != 0) {
+        uint8_t effect = pendingEffect;
+        pendingEffect = 0;
+        lastFrameMillis = now;
+        if (effect == 1) {
+            attention(pendingEffectCount);
+        } else if (effect == 2 || effect == 3) {
+            answerFlash(effect == 2);
+        }
+    }
+
+    if (scrolling && now - lastScrollStep >= SCROLL_STEP_MS) {
+        lastScrollStep = now;
+        drawText(scrollX);
+        scrollX--;
+        if (scrollX < -textPixelWidth(currentText)) {
+            // Scrolled through once: hold the tail
+            scrolling = false;
+            drawText(tailPosition());
+        }
+    }
+
+    // Heartbeat: blink while advertising; solid (no re-render needed) while connected
+    if (!connected && now - lastHeartbeatToggle >= HEARTBEAT_TOGGLE_MS) {
+        lastHeartbeatToggle = now;
+        heartbeatOn = !heartbeatOn;
+        if (!scrolling) {
+            render();
+        }
+    }
+
+    // Middle button replays the last message
+    bool middleDown = digitalRead(BUTTON_MIDDLE_PIN) == LOW;
+    if (middleDown && !middleWasDown
+            && (currentType == 'M' || currentType == 'W') && currentText.length() > 0) {
+        Serial.println("[kiep] replaying last message");
+        if (textPixelWidth(currentText) > MATRIX_WIDTH) {
+            startScroll();
+        } else {
+            drawText(tailPosition());
+        }
+    }
+    middleWasDown = middleDown;
+
+    // Arrow buttons step the brightness
+    bool leftDown = digitalRead(BUTTON_LEFT_PIN) == LOW;
+    if (leftDown && !leftWasDown && brightnessLevel > 0) {
+        brightnessLevel--;
+        applyBrightness();
+    }
+    leftWasDown = leftDown;
+
+    bool rightDown = digitalRead(BUTTON_RIGHT_PIN) == LOW;
+    if (rightDown && !rightWasDown && brightnessLevel < BRIGHTNESS_LEVEL_COUNT - 1) {
+        brightnessLevel++;
+        applyBrightness();
+    }
+    rightWasDown = rightDown;
+
+    // Privacy: never keep old text on the table indefinitely
+    if (currentText.length() > 0 && now - lastFrameMillis > IDLE_CLEAR_MS) {
+        Serial.println("[kiep] idle clear");
+        clearDisplay();
+    }
+
+    delay(5);
+}

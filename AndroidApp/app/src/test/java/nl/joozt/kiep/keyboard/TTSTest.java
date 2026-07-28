@@ -108,4 +108,31 @@ public class TTSTest {
         assertEquals("Two", TTS.sentenceAt("One. Two.", -1));
         assertEquals("Two", TTS.sentenceAt("One. Two.", 999));
     }
+
+    @Test
+    public void punctuationIncludedOnRequest() {
+        assertEquals("hello.", TTS.sentenceAt("hello.", 6, true));
+        assertEquals("Two!", TTS.sentenceAt("One. Two!", 9, true));
+        assertEquals("Two three.", TTS.sentenceAt("One. Two three. Four.", 7, true));
+    }
+
+    @Test
+    public void ellipsisIncludedOnRequest() {
+        assertEquals("Wait...", TTS.sentenceAt("Wait...", 7, true));
+    }
+
+    @Test
+    public void ellipsisSpokenWithoutPunctuation() {
+        assertEquals("Wait", TTS.lastSentence("Wait..."));
+    }
+
+    @Test
+    public void newlineIsNotPunctuation() {
+        assertEquals("Hi", TTS.sentenceAt("Hi\n", 3, true));
+    }
+
+    @Test
+    public void noTerminatorNothingToInclude() {
+        assertEquals("hello", TTS.sentenceAt("hello", 5, true));
+    }
 }

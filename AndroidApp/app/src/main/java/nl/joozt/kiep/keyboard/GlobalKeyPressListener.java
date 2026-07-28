@@ -3,18 +3,20 @@ package nl.joozt.kiep.keyboard;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GlobalKeyPressListener {
-    private static final String TAG = GlobalKeyPressListener.class.getSimpleName();
-
-    private final Map<CharSequence, OnKeyPressListener> charListeners = new HashMap<>();
-    private final Map<Integer, OnKeyPressListener> functionKeyListeners = new HashMap<>();
+    // A key can carry multiple commands on purpose (e.g. the speak key also
+    // sending to an external display); all listeners fire in registration
+    // order. Unintended conflicts are prevented by the Settings validation.
+    private final Map<CharSequence, List<OnKeyPressListener>> charListeners = new HashMap<>();
+    private final Map<Integer, List<OnKeyPressListener>> functionKeyListeners = new HashMap<>();
 
     public interface OnKeyPressListener {
         boolean onKeyPress();
@@ -50,37 +52,41 @@ public class GlobalKeyPressListener {
         FunctionKey(int keyCode) {
             this.keyCode = keyCode;
         }
+
+        int getKeyCode() {
+            return keyCode;
+        }
     }
 
     public GlobalKeyPressListener(TextView textView) {
         textView.addTextChangedListener(new TextWatcher() {
             private int pendingCommandIndex = -1;
-            private OnKeyPressListener pendingListener = null;
+            private List<OnKeyPressListener> pendingListeners = null;
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Only a single inserted character can be a command key press.
                 // Programmatic changes (setText, abbreviation expansions,
-                // downloaded documents) insert more than one character and are
-                // left alone.
+                // loaded files) insert more than one character and are left
+                // alone.
                 if (count != 1) {
                     return;
                 }
-                OnKeyPressListener listener = charListeners.get(Character.toString(s.charAt(start)));
-                if (listener != null) {
+                List<OnKeyPressListener> listeners = charListeners.get(Character.toString(s.charAt(start)));
+                if (listeners != null) {
                     pendingCommandIndex = start;
-                    pendingListener = listener;
+                    pendingListeners = listeners;
                 }
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (pendingListener == null) {
+                if (pendingListeners == null) {
                     return;
                 }
-                OnKeyPressListener listener = pendingListener;
+                List<OnKeyPressListener> listeners = pendingListeners;
                 int index = pendingCommandIndex;
-                pendingListener = null;
+                pendingListeners = null;
                 pendingCommandIndex = -1;
 
                 // Remove just the typed command character (bypassing filters),
@@ -91,7 +97,9 @@ public class GlobalKeyPressListener {
                 s.delete(index, index + 1);
                 s.setFilters(filters);
 
-                listener.onKeyPress();
+                for (OnKeyPressListener listener : listeners) {
+                    listener.onKeyPress();
+                }
             }
 
             @Override
@@ -100,9 +108,13 @@ public class GlobalKeyPressListener {
         });
 
         textView.setOnKeyListener((v, keyCode, event) -> {
-            OnKeyPressListener listener = functionKeyListeners.get(keyCode);
-            if (event.getAction() == KeyEvent.ACTION_DOWN && listener != null) {
-                return listener.onKeyPress();
+            List<OnKeyPressListener> listeners = functionKeyListeners.get(keyCode);
+            if (event.getAction() == KeyEvent.ACTION_DOWN && listeners != null) {
+                boolean consumed = false;
+                for (OnKeyPressListener listener : listeners) {
+                    consumed |= listener.onKeyPress();
+                }
+                return consumed;
             }
             return false;
         });
@@ -113,15 +125,11 @@ public class GlobalKeyPressListener {
             FunctionKey functionKey = FunctionKey.fromString(charSequence.toString());
             addListener(functionKey, listener);
         } catch (IllegalArgumentException e) {
-            if (charListeners.put(charSequence, listener) != null) {
-                Log.w(TAG, "Duplicate command key registration, last one wins: " + charSequence);
-            }
+            charListeners.computeIfAbsent(charSequence, key -> new ArrayList<>()).add(listener);
         }
     }
 
     public void addListener(FunctionKey functionKey, OnKeyPressListener listener) {
-        if (functionKeyListeners.put(functionKey.keyCode, listener) != null) {
-            Log.w(TAG, "Duplicate command key registration, last one wins: " + functionKey);
-        }
+        functionKeyListeners.computeIfAbsent(functionKey.keyCode, key -> new ArrayList<>()).add(listener);
     }
 }

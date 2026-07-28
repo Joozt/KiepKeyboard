@@ -38,6 +38,38 @@
     <string name="file_save_failed">Saving failed</string>
     <string name="file_changed_elsewhere">File was changed elsewhere — your version was saved</string>
 
+    <string name="setting_external_display">External display</string>
+    <string name="setting_enable_external_display">Enable external display</string>
+    <string name="setting_enable_external_display_description">Send typed text to nearby displays via Bluetooth (never via the internet)</string>
+    <string name="setting_external_display_mode">Send mode</string>
+    <string name="mode_hotkey_only">Hotkey only</string>
+    <string name="mode_character">Every character (live)</string>
+    <string name="mode_word">Every word</string>
+    <string name="mode_sentence">Every sentence</string>
+    <string name="setting_send_key">Send hotkey</string>
+    <string name="setting_send_key_description">Use the %s key to send the sentence under the cursor to the displays</string>
+    <string name="setting_attention_key">Attention hotkey</string>
+    <string name="setting_attention_key_description">Use the %s key to make the displays flash and beep</string>
+    <string name="setting_auto_attention">Attention after send</string>
+    <string name="setting_auto_attention_description">Automatically trigger attention on every sent word or sentence</string>
+    <string name="setting_attention_repeat">Attention beeps/flashes</string>
+    <string name="setting_attention_interval">Attention interval (seconds)</string>
+    <string name="setting_attention_interval_description">Minimum time between automatic attentions in word/sentence mode</string>
+    <string name="setting_yes_no_flash">Show yes/no on displays</string>
+    <string name="setting_yes_no_flash_description">Flash the displays green/red on a yes/no answer</string>
+    <string name="setting_add_display">Add display</string>
+    <string name="setting_displays">Paired displays</string>
+    <string name="searching_displays">Searching for displays…</string>
+    <string name="no_displays_found">No displays found</string>
+    <string name="no_displays_paired">No displays paired</string>
+    <string name="remove_display_title">Remove display</string>
+    <string name="bluetooth_disabled">Bluetooth is off</string>
+
+    <string name="title_activity_display" translatable="false">KiepKeyboard Display</string>
+    <string name="display_waiting">Waiting for the keyboard…</string>
+    <string name="display_permission_needed">Bluetooth permission is required to be visible as a display</string>
+    <string name="display_unsupported">This device does not support Bluetooth advertising</string>
+
     <string name="setting_file">File</string>
     <string name="setting_choose_file">Choose file</string>
     <string name="no_file_chosen">No file chosen</string>
