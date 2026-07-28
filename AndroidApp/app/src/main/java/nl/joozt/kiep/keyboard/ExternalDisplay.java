@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.BluetoothStatusCodes;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -206,9 +207,14 @@ public class ExternalDisplay {
             String address = display.substring(0, display.indexOf('|'));
             try {
                 Connection connection = new Connection();
-                // autoConnect: reconnects by itself whenever the display is in range
-                connection.gatt = adapter.getRemoteDevice(address)
+                // autoConnect: reconnects by itself whenever the display is in range.
+                // ponytail: connectGatt(Context, ...) is deprecated as of API 37;
+                // its BluetoothGattConnectionSettings replacement needs API 37+,
+                // so switch when minSdk catches up
+                @SuppressWarnings("deprecation")
+                BluetoothGatt gatt = adapter.getRemoteDevice(address)
                         .connectGatt(context, true, connection.callback, android.bluetooth.BluetoothDevice.TRANSPORT_LE);
+                connection.gatt = gatt;
                 connections.add(connection);
             } catch (IllegalArgumentException e) {
                 Log.w(TAG, "Invalid display address: " + address, e);
@@ -376,24 +382,35 @@ public class ExternalDisplay {
                 return;
             }
             if (pendingText != null) {
-                text.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-                text.setValue(pendingText);
-                Log.d(TAG, "Writing text frame '" + (char) pendingText[0] + "' (" + pendingText.length + " bytes)");
+                byte[] frame = pendingText;
                 pendingText = null;
-                busy = gatt.writeCharacteristic(text);
+                Log.d(TAG, "Writing text frame '" + (char) frame[0] + "' (" + frame.length + " bytes)");
+                busy = write(text, frame);
                 if (!busy) {
                     Log.w(TAG, "writeCharacteristic (text) refused");
                 }
             } else if (pendingEffect != null) {
-                attention.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
-                attention.setValue(pendingEffect);
-                Log.d(TAG, "Writing effect " + pendingEffect[0]);
+                byte[] payload = pendingEffect;
                 pendingEffect = null;
-                busy = gatt.writeCharacteristic(attention);
+                Log.d(TAG, "Writing effect " + payload[0]);
+                busy = write(attention, payload);
                 if (!busy) {
                     Log.w(TAG, "writeCharacteristic (attention) refused");
                 }
             }
+        }
+
+        // API 33+ takes the value in the write call; below that only the
+        // deprecated setValue/writeCharacteristic pair exists
+        @SuppressWarnings("deprecation")
+        private boolean write(BluetoothGattCharacteristic characteristic, byte[] value) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                return gatt.writeCharacteristic(characteristic, value, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+                        == BluetoothStatusCodes.SUCCESS;
+            }
+            characteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+            characteristic.setValue(value);
+            return gatt.writeCharacteristic(characteristic);
         }
     }
 }
