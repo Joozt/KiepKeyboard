@@ -41,9 +41,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.preference.PreferenceManager;
 
 import java.io.ByteArrayOutputStream;
@@ -134,14 +131,12 @@ public class DisplayActivity extends AppCompatActivity {
         batteryStatus = new BatteryStatus(this, progressBar, root);
 
         // A display on the table: screen stays on at full brightness, no bars
+        // (bars are hidden in onWindowFocusChanged - the permission and
+        // Bluetooth-enable dialogs steal focus and bring them back)
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         WindowManager.LayoutParams attributes = getWindow().getAttributes();
         attributes.screenBrightness = 1f;
         getWindow().setAttributes(attributes);
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        WindowInsetsControllerCompat insets = WindowCompat.getInsetsController(getWindow(), root);
-        insets.hide(WindowInsetsCompat.Type.systemBars());
-        insets.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
 
         // Same samples as the in-app yes/no keys; attention uses the system
         // notification sound instead of the Ulanzi beep
@@ -159,6 +154,14 @@ public class DisplayActivity extends AppCompatActivity {
                         status.setText(R.string.display_permission_needed);
                     }
                 });
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            ImmersiveMode.apply(getWindow());
+        }
     }
 
     @Override
