@@ -13,8 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Fixed text size; the newest text stays pinned at the bottom and old
-         lines move off the top, like the Ulanzi tail view with more rows -->
+    <!-- Centered like the keyboard's editText; when the text overflows the
+         scroll-to-bottom in showText keeps the newest lines visible -->
     <ScrollView
         android:id="@+id/displayScroll"
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="0dp"
-            android:gravity="bottom|center_horizontal"
+            android:gravity="center"
             android:padding="24dp"
             android:textColor="@android:color/white" />
     </ScrollView>
