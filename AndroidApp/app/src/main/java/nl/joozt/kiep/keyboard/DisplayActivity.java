@@ -17,7 +17,6 @@ import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -30,7 +29,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelUuid;
 import android.util.Log;
-import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
@@ -41,7 +40,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
-import androidx.preference.PreferenceManager;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -80,6 +78,7 @@ public class DisplayActivity extends AppCompatActivity {
     private final Map<UUID, ByteArrayOutputStream> preparedWrites = new HashMap<>();
 
     private View root;
+    private FontSize fontSize;
     private View flash;
     private ScrollView scroll;
     private TextView text;
@@ -122,10 +121,9 @@ public class DisplayActivity extends AppCompatActivity {
         heartbeat = findViewById(R.id.displayHeartbeat);
 
         // Fixed size, set on the receiver device: autosizing made the size
-        // jump between a short hotkey sentence and the full live buffer
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        text.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-                preferences.getInt(SettingsActivity.DISPLAY_TEXT_SIZE, SettingsActivity.DISPLAY_TEXT_SIZE_DEFAULT));
+        // jump between a short hotkey sentence and the full live buffer.
+        // Same Font size setting and hotkeys as the keyboard screen.
+        fontSize = new FontSize(this, text);
 
         ProgressBar progressBar = findViewById(R.id.progressBar);
         batteryStatus = new BatteryStatus(this, progressBar, root);
@@ -168,6 +166,37 @@ public class DisplayActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         startBle();
+    }
+
+    // Font size hotkeys for a keyboard attached to this device. The
+    // keyboard screen routes keys through GlobalKeyPressListener on its
+    // editText; this screen has no text input, so match the raw key events.
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (matches(fontSize.getDecrementKey(), event)) {
+            fontSize.decrement();
+            return true;
+        }
+        if (matches(fontSize.getIncrementKey(), event)) {
+            fontSize.increment();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private static boolean matches(String configuredKey, KeyEvent event) {
+        try {
+            return GlobalKeyPressListener.FunctionKey.fromString(configuredKey).getKeyCode() == event.getKeyCode();
+        } catch (IllegalArgumentException e) {
+            int unicodeChar = event.getUnicodeChar();
+            return unicodeChar != 0 && configuredKey.contentEquals(String.valueOf((char) unicodeChar));
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        fontSize.saveCurrentFontSize();
     }
 
     @Override

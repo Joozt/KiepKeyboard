@@ -3,7 +3,7 @@ package nl.joozt.kiep.keyboard;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.TypedValue;
-import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.preference.PreferenceManager;
 
@@ -13,14 +13,19 @@ public class FontSize {
     private static final int MAX_SP = 400;
 
     private final SharedPreferences preferences;
-    private final EditText editText;
+    private final TextView textView;
     private final String decrementKey;
     private final String incrementKey;
     private int fontSizeSp;
 
-    public FontSize(Context context, GlobalKeyPressListener keyPressListener, final EditText editText) {
+    /**
+     * Applies the shared font size setting without hotkey registration, for
+     * screens without a text editor (DisplayActivity handles key events
+     * itself and calls increment/decrement).
+     */
+    public FontSize(Context context, final TextView textView) {
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        this.editText = editText;
+        this.textView = textView;
 
         // Track the size in sp directly instead of deriving it back from
         // pixels; DisplayMetrics.scaledDensity is deprecated (API 34) and the
@@ -29,26 +34,39 @@ public class FontSize {
         applyFontSize();
 
         decrementKey = preferences.getString(SettingsActivity.FONT_SIZE_DECREMENT_KEY, SettingsActivity.FONT_SIZE_DECREMENT_KEY_DEFAULT);
+        incrementKey = preferences.getString(SettingsActivity.FONT_SIZE_INCREMENT_KEY, SettingsActivity.FONT_SIZE_INCREMENT_KEY_DEFAULT);
+    }
+
+    public FontSize(Context context, GlobalKeyPressListener keyPressListener, final TextView textView) {
+        this(context, textView);
+
         keyPressListener.addListener(decrementKey, () -> {
-            if (fontSizeSp - STEP_SP >= MIN_SP) {
-                fontSizeSp -= STEP_SP;
-                applyFontSize();
-            }
+            decrement();
             return true;
         });
 
-        incrementKey = preferences.getString(SettingsActivity.FONT_SIZE_INCREMENT_KEY, SettingsActivity.FONT_SIZE_INCREMENT_KEY_DEFAULT);
         keyPressListener.addListener(incrementKey, () -> {
-            if (fontSizeSp + STEP_SP <= MAX_SP) {
-                fontSizeSp += STEP_SP;
-                applyFontSize();
-            }
+            increment();
             return true;
         });
     }
 
+    public void decrement() {
+        if (fontSizeSp - STEP_SP >= MIN_SP) {
+            fontSizeSp -= STEP_SP;
+            applyFontSize();
+        }
+    }
+
+    public void increment() {
+        if (fontSizeSp + STEP_SP <= MAX_SP) {
+            fontSizeSp += STEP_SP;
+            applyFontSize();
+        }
+    }
+
     private void applyFontSize() {
-        editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp);
     }
 
     public String getDecrementKey() {

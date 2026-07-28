@@ -65,7 +65,6 @@
     <string name="remove_display_title">Scherm verwijderen</string>
     <string name="bluetooth_disabled">Bluetooth staat uit</string>
 
-    <string name="setting_display_text_size">Tekstgrootte</string>
     <string name="display_waiting">Wachten op het toetsenbord…</string>
     <string name="display_permission_needed">Bluetooth-toestemming is nodig om zichtbaar te zijn als scherm</string>
     <string name="display_unsupported">Dit apparaat ondersteunt geen Bluetooth-advertising</string>

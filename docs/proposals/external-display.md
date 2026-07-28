@@ -32,6 +32,14 @@ Date: 2026-07-05
 > color and postpone the single fade-out. Battery bar added (same
 > `BatteryStatus` + bar as the keyboard screen). Launcher entry renamed to
 > "KiepKeyboard Display" with the standard app icon.
+>
+> **Phase 2 polish round 2 (2026-07-28).** Fullscreen is re-applied on
+> window focus (the permission/Bluetooth dialogs brought the bars back).
+> Text is centered like the keyboard's editText instead of pinned at the
+> bottom; overflow still scrolls to the newest lines. The dedicated
+> receiver text-size SeekBar is gone: the display reuses the shared Font
+> size setting, adjustable locally with the same increase/decrease hotkeys
+> when a keyboard is attached to the display device.
 
 ## Background
 

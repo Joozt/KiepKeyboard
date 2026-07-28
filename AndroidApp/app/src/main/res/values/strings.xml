@@ -66,8 +66,6 @@
     <string name="bluetooth_disabled">Bluetooth is off</string>
 
     <string name="title_activity_display" translatable="false">KiepKeyboard Display</string>
-    <string name="setting_display" translatable="false">KiepKeyboard Display</string>
-    <string name="setting_display_text_size">Text size</string>
     <string name="display_waiting">Waiting for the keyboard…</string>
     <string name="display_permission_needed">Bluetooth permission is required to be visible as a display</string>
     <string name="display_unsupported">This device does not support Bluetooth advertising</string>
