@@ -52,6 +52,10 @@ public class GlobalKeyPressListener {
         FunctionKey(int keyCode) {
             this.keyCode = keyCode;
         }
+
+        int getKeyCode() {
+            return keyCode;
+        }
     }
 
     public GlobalKeyPressListener(TextView textView) {

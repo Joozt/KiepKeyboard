@@ -10,6 +10,44 @@ Date: 2026-07-05
 > send-key = speak-key default; Settings exempts exactly that pair from
 > duplicate-key validation. Receiver firmware: `UlanziReceiver/` (PlatformIO).
 > Untested against real hardware at the time of writing.
+>
+> **Phase 2 notes (2026-07-24).** Android receive mode implemented as
+> `DisplayActivity` — its own launcher entry ("Kiep Display", accent-blue
+> icon variant). Foreground-only: advertises the KiepDisplay service while
+> visible, keeps the screen on at full brightness, clears on disconnect and
+> after the 10-minute idle timeout (Ulanzi parity). Deviations from the
+> Ulanzi rendering: no scrolling (text autosizes to fit the screen, so the
+> `M`/`W`/`L` types render identically) and attention plays the system
+> notification sound instead of a beep. Yes/no reuses the in-app yes/no
+> samples and green/red highlight. `BLUETOOTH_ADVERTISE` is requested when
+> the receiver is first opened; the keyboard side is unchanged.
+>
+> **Phase 2 polish (2026-07-27, after phone→tablet hardware test).** Autosize
+> rendering dropped: the size jumped between a short hotkey sentence and the
+> full live buffer. Now a fixed text size (SeekBar in Settings, receiver
+> side, default 80sp) with the newest text pinned at the bottom and older
+> lines moving off the top — the Ulanzi tail view with more rows. Attention
+> flash is amber (white drowned the white text) and all flashes use the
+> exact yes/no fade pattern from the phone: repeats fade in from the current
+> color and postpone the single fade-out. Battery bar added (same
+> `BatteryStatus` + bar as the keyboard screen). Launcher entry renamed to
+> "KiepKeyboard Display" with the standard app icon.
+>
+> **Phase 2 polish round 2 (2026-07-28).** Fullscreen is re-applied on
+> window focus (the permission/Bluetooth dialogs brought the bars back).
+> Text is centered like the keyboard's editText instead of pinned at the
+> bottom; overflow still scrolls to the newest lines. The dedicated
+> receiver text-size SeekBar is gone: the display reuses the shared Font
+> size setting, adjustable locally with the same increase/decrease hotkeys
+> when a keyboard is attached to the display device.
+>
+> **Connection fix (2026-07-28).** Android receivers advertise with a
+> resolvable private address that rotates, so the address stored when the
+> display was added goes stale and the keyboard's connect is rejected
+> (status 135) forever. The keyboard now scans for the KiepDisplay service
+> and connects to stored displays matched by name at their current
+> address, resuming the scan whenever one drops. Static addresses (the
+> Ulanzi) are still dialed directly with autoConnect.
 
 ## Background
 

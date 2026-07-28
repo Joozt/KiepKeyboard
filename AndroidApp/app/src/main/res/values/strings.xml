@@ -65,6 +65,11 @@
     <string name="remove_display_title">Remove display</string>
     <string name="bluetooth_disabled">Bluetooth is off</string>
 
+    <string name="title_activity_display" translatable="false">KiepKeyboard Display</string>
+    <string name="display_waiting">Waiting for the keyboard…</string>
+    <string name="display_permission_needed">Bluetooth permission is required to be visible as a display</string>
+    <string name="display_unsupported">This device does not support Bluetooth advertising</string>
+
     <string name="setting_file">File</string>
     <string name="setting_choose_file">Choose file</string>
     <string name="no_file_chosen">No file chosen</string>
