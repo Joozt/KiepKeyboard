@@ -10,12 +10,18 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothStatusCodes;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.ParcelUuid;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -66,6 +72,8 @@ public class ExternalDisplay {
     private final EditText editText;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final List<Connection> connections = new ArrayList<>();
+    private BluetoothLeScanner scanner;
+    private ScanCallback scanCallback;
     private final String sendKey;
     private final String attentionKey;
     private final boolean autoAttention;
@@ -193,7 +201,8 @@ public class ExternalDisplay {
             return;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                && ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                && (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED)) {
             Log.w(TAG, "Bluetooth permission missing; displays not connected");
             return;
         }
@@ -205,21 +214,104 @@ public class ExternalDisplay {
         }
         for (String display : displays) {
             String address = display.substring(0, display.indexOf('|'));
-            try {
-                Connection connection = new Connection();
-                // autoConnect: reconnects by itself whenever the display is in range.
+            String name = display.substring(display.indexOf('|') + 1);
+            Connection connection = new Connection();
+            connection.name = name;
+            if (isStaticAddress(address)) {
+                // Static address (the Ulanzi): dial it directly, autoConnect
+                // reconnects by itself whenever the display is in range.
                 // ponytail: connectGatt(Context, ...) is deprecated as of API 37;
                 // its BluetoothGattConnectionSettings replacement needs API 37+,
                 // so switch when minSdk catches up
-                @SuppressWarnings("deprecation")
-                BluetoothGatt gatt = adapter.getRemoteDevice(address)
-                        .connectGatt(context, true, connection.callback, android.bluetooth.BluetoothDevice.TRANSPORT_LE);
-                connection.gatt = gatt;
-                connections.add(connection);
-            } catch (IllegalArgumentException e) {
-                Log.w(TAG, "Invalid display address: " + address, e);
+                try {
+                    @SuppressWarnings("deprecation")
+                    BluetoothGatt gatt = adapter.getRemoteDevice(address)
+                            .connectGatt(context, true, connection.callback, android.bluetooth.BluetoothDevice.TRANSPORT_LE);
+                    connection.gatt = gatt;
+                } catch (IllegalArgumentException e) {
+                    Log.w(TAG, "Invalid display address: " + address, e);
+                    continue;
+                }
+            } else {
+                // Android receivers advertise with a resolvable private address
+                // that rotates; the address stored at add time goes stale (the
+                // stack then rejects connects with status 135). Find them by
+                // scanning for the KiepDisplay service and match on the stored
+                // name, connecting to whatever address they use right now.
+                connection.scanBased = true;
+            }
+            connections.add(connection);
+        }
+        this.scanner = adapter.getBluetoothLeScanner();
+        startScanIfNeeded();
+    }
+
+    /** Top two address bits 11 = static random: never rotates, safe to store. */
+    private static boolean isStaticAddress(String address) {
+        try {
+            return (Integer.parseInt(address.substring(0, 2), 16) & 0xC0) == 0xC0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private void startScanIfNeeded() {
+        if (scanner == null || scanCallback != null || !hasUnconnectedScanBased()) {
+            return;
+        }
+        scanCallback = new ScanCallback() {
+            @Override
+            public void onScanResult(int callbackType, ScanResult result) {
+                String name = result.getScanRecord() != null ? result.getScanRecord().getDeviceName() : null;
+                handler.post(() -> onDisplayFound(result, name));
+            }
+        };
+        List<ScanFilter> filters = Collections.singletonList(new ScanFilter.Builder()
+                .setServiceUuid(new ParcelUuid(SERVICE_UUID))
+                .build());
+        // ponytail: BALANCED finds a display within a few seconds; LOW_POWER
+        // if hours-long keyboard sessions ever hurt battery
+        ScanSettings settings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+                .build();
+        Log.d(TAG, "Scanning for displays");
+        scanner.startScan(filters, settings, scanCallback);
+    }
+
+    private void stopScanIfDone() {
+        if (scanCallback != null && !hasUnconnectedScanBased()) {
+            Log.d(TAG, "All displays found, scan stopped");
+            scanner.stopScan(scanCallback);
+            scanCallback = null;
+        }
+    }
+
+    private boolean hasUnconnectedScanBased() {
+        for (Connection connection : connections) {
+            if (connection.scanBased && connection.gatt == null) {
+                return true;
             }
         }
+        return false;
+    }
+
+    private void onDisplayFound(ScanResult result, String name) {
+        if (name == null) {
+            return;
+        }
+        for (Connection connection : connections) {
+            if (connection.scanBased && connection.gatt == null && name.equals(connection.name)) {
+                Log.d(TAG, "Found display '" + name + "', connecting");
+                // Direct connect (no autoConnect): the address rotates, so a
+                // failed or dropped link goes back to scanning instead
+                @SuppressWarnings("deprecation")
+                BluetoothGatt gatt = result.getDevice()
+                        .connectGatt(context, false, connection.callback, android.bluetooth.BluetoothDevice.TRANSPORT_LE);
+                connection.gatt = gatt;
+                break;
+            }
+        }
+        stopScanIfDone();
     }
 
     private void sendFrame(byte type, String text) {
@@ -282,6 +374,10 @@ public class ExternalDisplay {
 
     public void destroy() {
         handler.removeCallbacksAndMessages(null);
+        if (scanCallback != null) {
+            scanner.stopScan(scanCallback);
+            scanCallback = null;
+        }
         for (Connection connection : connections) {
             if (connection.gatt != null) {
                 connection.gatt.close();
@@ -304,6 +400,8 @@ public class ExternalDisplay {
     // reading flow since word-mode messages are cumulative
     private class Connection {
         BluetoothGatt gatt;
+        String name;
+        boolean scanBased = false;
         BluetoothGattCharacteristic text;
         BluetoothGattCharacteristic attention;
         boolean ready = false;
@@ -326,6 +424,13 @@ public class ExternalDisplay {
                     } else {
                         ready = false;
                         busy = false;
+                        if (scanBased && Connection.this.gatt != null) {
+                            // The next advertised address may differ; drop the
+                            // dead link and let the scan find the display again
+                            Connection.this.gatt.close();
+                            Connection.this.gatt = null;
+                            startScanIfNeeded();
+                        }
                         notifyConnectionChanged();
                     }
                 });

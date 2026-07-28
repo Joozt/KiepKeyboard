@@ -40,6 +40,14 @@ Date: 2026-07-05
 > receiver text-size SeekBar is gone: the display reuses the shared Font
 > size setting, adjustable locally with the same increase/decrease hotkeys
 > when a keyboard is attached to the display device.
+>
+> **Connection fix (2026-07-28).** Android receivers advertise with a
+> resolvable private address that rotates, so the address stored when the
+> display was added goes stale and the keyboard's connect is rejected
+> (status 135) forever. The keyboard now scans for the KiepDisplay service
+> and connects to stored displays matched by name at their current
+> address, resuming the scan whenever one drops. Static addresses (the
+> Ulanzi) are still dialed directly with autoConnect.
 
 ## Background
 
