@@ -1,8 +1,36 @@
 # Proposal: Ulanzi TC002 receiver
 
-Status: Design approved in review (2026-09-29) — no implementation yet
+Status: Implemented and installed on the device (2026-09-29) — hardware verified
 Author: (Joost)
 Date: 2026-09-29
+
+> **Implementation notes (2026-09-29).** Built as designed in
+> `UlanziTC002Receiver/`; setup and verification in its `docs/SETUP.md`.
+> Deviations found on the hardware:
+>
+> - **Controls (user request during implementation):** knob rotate = notification
+>   volume 0–6 with one preview sound when the knob rests; left/right buttons =
+>   brightness; knob press *and* middle button = replay. The spec's "knob =
+>   brightness" is superseded.
+> - **Bluetooth bring-up:** `aic8800_bsp` alone gives no `hci0`; `bsp` + `fdrv`
+>   is needed (`wlan0` appears and is forced down). The EasyUI framework starts
+>   `wpa_supplicant` when the stock `persist.wifi.on=1` is set, so the app sets
+>   it to 0 and stops the service. `ifconfig wlan0 down` does not hurt BLE.
+>   Right after `hciattach` the controller sometimes answers LE Set Advertising
+>   Data with a Hardware Error event: commands are status-checked and retried.
+> - **No UI resource:** the loader logs "open main.ftu fail!" and "not found
+>   mainActivity Activity" and runs on; no `.ftu` is shipped.
+> - **Install path:** the loader consults only `/tmp/EasyUI.cfg` and
+>   `/res/etc/EasyUI.cfg`, so the permanent install rebuilds the `res` squashfs
+>   (stock app kept, our `libkiep.so` + `ui/kiep/` added, config edited) and
+>   flashes it through the vendor `sys.zkupgrade` path; `install.py` packs the
+>   `update.img` container byte-identically to the vendor image.
+> - **Sound:** `res/ui/beep.mp3` (user-chosen clip) is the only sound; plays are
+>   queued and sequential. Battery: the MCU reports percent but no charging flag.
+> - **Measured:** scroll cadence 30.0 ms ± 0.0 ms, no dropped ticks; `verify.py`
+>   14/14 on the deployed build and on the installed firmware (with no other
+>   BLE central nearby: a connected phone re-sends its buffer after a
+>   disconnect and breaks the disconnect-clear fixture).
 
 Companion to [external-display.md](external-display.md) (owns the BLE
 protocol) and [ulanzi-receiver.md](ulanzi-receiver.md) (the TC001

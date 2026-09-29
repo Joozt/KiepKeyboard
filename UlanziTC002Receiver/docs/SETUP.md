@@ -151,7 +151,9 @@ python tools/verify.py --only accents
 python tools/verify.py --update   # rewrite goldens after a deliberate rendering change; review tests/golden/*.png
 ```
 It drives the display from the laptop over BLE (one connection per fixture, held while capturing), pulls
-the frame tap, and checks lit columns, dominant color, motion, cadence and golden frames. Failed goldens
+the frame tap, and checks lit columns, dominant color, motion, cadence and golden frames. **Keep other
+centrals away while it runs**: a phone with the KiepKeyboard app reconnects the moment the laptop
+disconnects and pushes its buffer, which fails `disconnect_clear`. Failed goldens
 land in `out/fail_<name>.png`. A new feature gets a new fixture (schema in the script's docstring);
 `idle_ms` fixtures restart the app twice and take ~30 s.
 
