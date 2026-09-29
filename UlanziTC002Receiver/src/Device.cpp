@@ -9,11 +9,18 @@
 #include <cstring>
 #include <fstream>
 
+#include <sys/stat.h>
+
 #include "BtBringup.h"
 #include "KiepGatt.h"
 #include "Log.h"
+#include "Mcu.h"
 
 namespace kiep {
+
+static const char* BRIGHTNESS_FILE = "/data/kiep/brightness";
+static const int KEY_KNOB = 0x67;  // evdev code of the knob press (left 0x6C, middle 0x69, right 0x6A unused)
+static const int BATTERY_LOW_PERCENT = 15;
 
 // ponytail: prepared-write chunks (BlueZ delivers long writes per chunk with offsets) are committed once
 // no chunk arrived for one settle window. Upgrade: hook BT_ATT_OP_EXEC_WRITE_REQ if the latency matters.
@@ -50,8 +57,26 @@ void Device::start() {
   if (!panel_.open()) KLOGW("panel unavailable");
   tap_.open();
   sound_.init("/tmp/kiep/ui");
+  {
+    std::ifstream b(BRIGHTNESS_FILE);
+    int level;
+    if (b >> level) { presenter_.setBrightnessLevel(level); KLOG("brightness level %d (persisted)", level); }
+  }
   running_ = true;
   render_ = std::thread(&Device::renderLoop, this);
+  input_.start([this](int code, int value) { if (value == 1 && code == KEY_KNOB) onKnobPress(); },
+               [this](int delta) { onKnob(delta); });
+  std::thread([this] {  // battery poll; the MCU link also proves itself here
+    Mcu mcu;
+    if (!mcu.open()) return;
+    std::string v;
+    if (mcu.queryVersion(v)) KLOG("mcu version %s", v.c_str()); else KLOGW("mcu: no version reply");
+    while (running_) {
+      int pct; bool chg;
+      if (mcu.queryBattery(pct, chg)) setBatteryLow(pct < BATTERY_LOW_PERCENT && !chg);
+      for (int i = 0; i < 300 && running_; i++) usleep(100 * 1000);  // 30 s
+    }
+  }).detach();
   std::thread([this] {  // bring-up takes seconds; never block the loader thread
     if (btBringup()) {
       kiep_gatt_callbacks cb{gattConnected, gattText, gattAttention, this};
@@ -96,12 +121,20 @@ void Device::onAttention(const uint8_t* v, size_t len) {
 }
 
 void Device::onKnob(int d) {
-  std::lock_guard<std::mutex> l(mu_);
-  presenter_.setBrightnessLevel(presenter_.brightnessLevel() + d);
+  int level;
+  {
+    std::lock_guard<std::mutex> l(mu_);
+    presenter_.setBrightnessLevel(presenter_.brightnessLevel() + d);
+    level = presenter_.brightnessLevel();
+  }
+  mkdir("/data/kiep", 0755);
+  std::ofstream(BRIGHTNESS_FILE) << level;  // /data is the only persistent writable filesystem
+  KLOG("brightness level %d", level);
 }
 void Device::onKnobPress() {
   std::lock_guard<std::mutex> l(mu_);
   presenter_.replay(nowMs());
+  KLOG("replay");
 }
 void Device::setBatteryLow(bool low) {
   std::lock_guard<std::mutex> l(mu_);
