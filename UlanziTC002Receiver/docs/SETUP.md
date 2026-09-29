@@ -129,8 +129,8 @@ to restore.
   13→11 counter-clockwise. The sound plays once at the new level ~300 ms after the knob rests. Persists in
   `/data/kiep/volume`.
 - Left / right buttons (`/dev/input/event67`, keys 0x6C / 0x6A): brightness down / up in 5 levels, persisted
-  in `/data/kiep/brightness`. Middle button (0x69) unused.
-- Knob press (key 0x67): replays the last message from the start (`replay` in logcat).
+  in `/data/kiep/brightness`.
+- Knob press (key 0x67) or middle button (0x69): replays the last message from the start (`replay` in logcat).
 - Battery: polled every 30 s over the MCU UART (`/dev/ttyS1`, 1.5 Mbaud); logcat shows `mcu version V1.0.17`
   at start. Below 15 % the heartbeat pixel turns red. The MCU reports no charging flag.
 

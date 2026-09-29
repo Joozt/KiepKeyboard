@@ -99,10 +99,9 @@ void Device::start() {
   render_ = std::thread(&Device::renderLoop, this);
   input_.start([this](int code, int value) {
                  if (value != 1) return;  // press only
-                 if (code == KEY_KNOB) onKnobPress();
+                 if (code == KEY_KNOB || code == KEY_MIDDLE) onKnobPress();
                  else if (code == KEY_LEFT) onBrightness(-1);
                  else if (code == KEY_RIGHT) onBrightness(+1);
-                 else if (code == KEY_MIDDLE) KLOG("middle button (unused)");
                },
                [this](int delta) { onKnob(delta); });
   std::thread([this] {  // battery poll; the MCU link also proves itself here
