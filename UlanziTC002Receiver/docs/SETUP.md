@@ -96,7 +96,17 @@ Known controller quirk: right after `hciattach`, the AIC controller sometimes an
 Advertising Data with a Hardware Error event; the app checks the status and retries (`gatt: LE cmd …
 attempt N failed`). Persistent failures mean advertising without our payload: power cycle.
 
-## 6. Troubleshooting
+## 6. Permanent install
+
+Decided on hardware (2026-09-29): the loader (`/bin/zkgui` + `/lib/libzkupgrade.so`) reads only
+`/tmp/EasyUI.cfg` (RAM, written by `zkdaemon` as `{}` after boot failures) or `/res/etc/EasyUI.cfg`
+(read-only squashfs). Nothing under `/data` or `/mnt/storage` is consulted, so a permanent install
+rebuilds the `res` partition image and flashes it with the vendor upgrade path
+(`sys.zkupgrade.dir` + `sys.zkupgrade.flag`). Tooling: `tools/install.py` (backup, build-image,
+flash, uninstall); procedure in section 8 once implemented. The vendor's own `update.img` sits in
+`/mnt/storage` and serves as the header template.
+
+## 7. Troubleshooting
 
 | Symptom | Cause / fix |
 | --- | --- |

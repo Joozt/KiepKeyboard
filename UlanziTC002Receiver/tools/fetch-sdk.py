@@ -50,10 +50,6 @@ def main():
     lib = fetch(f"{base}/lib/libgatt-server.a", CACHE / "bluez/lib/libgatt-server.a")
     if sha256(lib) != b["lib_sha256"]:
         sys.exit("libgatt-server.a sha256 mismatch")
-    # Spike stand-in for the loader's UI resource (the demo repo is GPL-3: kept in the cache, never committed).
-    # Task 5 replaces it with our own res/ui/main.ftu.
-    fetch(f'https://raw.githubusercontent.com/UlanziTechnology/Ulanzi-U-Clock-TC002/{b["commit"]}/Z21_TC002_Demo/ui/main.ftu',
-          CACHE / "demo-ui/main.ftu")
     if changed:
         LOCK.write_text(json.dumps(lock, indent=2) + "\n")
     print("sdk ok:", CACHE)

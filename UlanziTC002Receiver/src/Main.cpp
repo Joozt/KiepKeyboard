@@ -6,7 +6,9 @@
 #include "Device.h"
 #include "Log.h"
 
-// The loader insists on an activity + UI resource even though the LED panel bypasses the LCD pipeline.
+// The loader looks for a startup activity; the LED panel bypasses the LCD pipeline entirely, so we
+// register a bare one and ship no UI resource. The loader logs "open …/main.ftu fail!" and "not found
+// mainActivity Activity" and carries on (verified on hardware: onEasyUIInit has already run).
 class mainActivity : public Activity {
  protected:
   const char* getAppName() const override { return "main.ftu"; }
