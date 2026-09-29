@@ -14,25 +14,35 @@
 
 namespace kiep {
 
-static const int VOLUME = 25;  // SDK volume for stock level 6 of 6 (mapping 0,15,17,19,21,23,25); level 3 was too soft
+// Stock volume steps 0..6 mapped to the SDK's 0..25 scale (0 = mute); level 3 was too soft on the table
+static const int VOLUME_MAP[7] = {0, 15, 17, 19, 21, 23, 25};
 
 static bool exists(const std::string& p) { return access(p.c_str(), R_OK) == 0; }
 
-void Sound::init(const std::string& resDir) {
+void Sound::init(const std::string& resDir, int level) {
   // A user-supplied beep.mp3 (any short sound) wins over the generated beep.wav
   path_ = exists(resDir + "/beep.mp3") ? resDir + "/beep.mp3" : resDir + "/beep.wav";
 #ifdef KIEP_SOUND
-  base::AudioManager::instance().setVolume(VOLUME);
-  base::AudioManager::instance().setMute(false);
   ready_ = true;
+  setLevel(level);
   KLOG("sound: ready (%s)", path_.c_str());
 #else
+  (void)level;
   KLOG("sound: built without audio");
 #endif
 }
 
+void Sound::setLevel(int level) {
+  level_ = level < 0 ? 0 : level > 6 ? 6 : level;
+#ifdef KIEP_SOUND
+  if (!ready_) return;
+  base::AudioManager::instance().setMute(level_ == 0);
+  base::AudioManager::instance().setVolume(VOLUME_MAP[level_]);
+#endif
+}
+
 void Sound::beep(int count) {
-  if (!ready_ || count <= 0) return;
+  if (!ready_ || count <= 0 || level_ == 0) return;
   // Flash onsets arrive one per render tick; queue them and let one worker drain the queue, so no beep
   // is dropped while the previous one still plays (3 requested came out as 2 before).
   pending_ += count;

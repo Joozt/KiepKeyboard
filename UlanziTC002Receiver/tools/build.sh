@@ -21,6 +21,7 @@ case "$1" in
     ;;
 esac
 if [ -f out/device/lib/libzkgui.so ]; then
+  cp -r res/ui/. out/device/ui/   # resources refresh even when the library did not relink
   arm-linux-gnueabihf-strip --strip-unneeded out/device/lib/libzkgui.so
   echo "bundle: out/device"
 fi

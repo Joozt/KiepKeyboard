@@ -11,6 +11,8 @@
 
 #include <sys/stat.h>
 
+#include <manager/ConfigManager.h>
+
 #include "BtBringup.h"
 #include "KiepGatt.h"
 #include "Log.h"
@@ -18,9 +20,41 @@
 
 namespace kiep {
 
-static const char* BRIGHTNESS_FILE = "/data/kiep/brightness";
-static const int KEY_KNOB = 0x67;  // evdev code of the knob press (left 0x6C, middle 0x69, right 0x6A unused)
+static const char* BRIGHTNESS_FILE = "/data/kiep/brightness";  // /data is the only persistent writable filesystem
+static const char* VOLUME_FILE = "/data/kiep/volume";
+static const int KEY_KNOB = 0x67, KEY_LEFT = 0x6C, KEY_MIDDLE = 0x69, KEY_RIGHT = 0x6A;  // evdev codes
 static const int BATTERY_LOW_PERCENT = 15;
+static const int VOLUME_PREVIEW_MS = 300;  // knob rest time before the volume preview sound
+
+// resPath from the loader config (/tmp/kiep/ui/ when deployed, /res/ui/kiep/ when installed): ask the SDK,
+// fall back to reading the config files in the loader's own lookup order.
+static std::string resourceDir() {
+  std::string p = CONFIGMANAGER->getResFilePath("beep.wav");
+  size_t slash = p.rfind('/');
+  if (slash != std::string::npos && slash > 0) return p.substr(0, slash);
+  for (const char* cfg : {"/tmp/EasyUI.cfg", "/res/etc/EasyUI.cfg"}) {
+    std::ifstream f(cfg);
+    std::string s((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    size_t k = s.find("\"resPath\"");
+    if (k == std::string::npos) continue;
+    size_t a = s.find('"', s.find(':', k) + 1), b = s.find('"', a + 1);
+    if (a == std::string::npos || b == std::string::npos) continue;
+    std::string dir = s.substr(a + 1, b - a - 1);
+    while (!dir.empty() && dir.back() == '/') dir.pop_back();
+    return dir;
+  }
+  return "/tmp/kiep/ui";
+}
+
+static int readLevel(const char* file, int fallback) {
+  std::ifstream f(file);
+  int v;
+  return (f >> v) ? v : fallback;
+}
+static void writeLevel(const char* file, int v) {
+  mkdir("/data/kiep", 0755);
+  std::ofstream(file) << v;
+}
 
 // ponytail: prepared-write chunks (BlueZ delivers long writes per chunk with offsets) are committed once
 // no chunk arrived for one settle window. Upgrade: hook BT_ATT_OP_EXEC_WRITE_REQ if the latency matters.
@@ -56,15 +90,20 @@ void Device::start() {
   if (idle >> ms) { presenter_.setIdleMs(ms); KLOG("idle override %lld ms", (long long)ms); }
   if (!panel_.open()) KLOGW("panel unavailable");
   tap_.open();
-  sound_.init("/tmp/kiep/ui");
-  {
-    std::ifstream b(BRIGHTNESS_FILE);
-    int level;
-    if (b >> level) { presenter_.setBrightnessLevel(level); KLOG("brightness level %d (persisted)", level); }
-  }
+  std::string resDir = resourceDir();
+  volume_ = readLevel(VOLUME_FILE, 6);
+  sound_.init(resDir, volume_);
+  presenter_.setBrightnessLevel(readLevel(BRIGHTNESS_FILE, 4));
+  KLOG("brightness level %d, volume level %d", presenter_.brightnessLevel(), volume_);
   running_ = true;
   render_ = std::thread(&Device::renderLoop, this);
-  input_.start([this](int code, int value) { if (value == 1 && code == KEY_KNOB) onKnobPress(); },
+  input_.start([this](int code, int value) {
+                 if (value != 1) return;  // press only
+                 if (code == KEY_KNOB) onKnobPress();
+                 else if (code == KEY_LEFT) onBrightness(-1);
+                 else if (code == KEY_RIGHT) onBrightness(+1);
+                 else if (code == KEY_MIDDLE) KLOG("middle button (unused)");
+               },
                [this](int delta) { onKnob(delta); });
   std::thread([this] {  // battery poll; the MCU link also proves itself here
     Mcu mcu;
@@ -121,14 +160,22 @@ void Device::onAttention(const uint8_t* v, size_t len) {
 }
 
 void Device::onKnob(int d) {
+  int v = volume_ + d;
+  volume_ = v < 0 ? 0 : v > 6 ? 6 : v;
+  sound_.setLevel(volume_);
+  writeLevel(VOLUME_FILE, volume_);
+  KLOG("volume level %d", volume_);
+  previewAtMs_ = nowMs() + VOLUME_PREVIEW_MS;  // one sound at the final level once the knob rests (silent at 0)
+}
+
+void Device::onBrightness(int d) {
   int level;
   {
     std::lock_guard<std::mutex> l(mu_);
     presenter_.setBrightnessLevel(presenter_.brightnessLevel() + d);
     level = presenter_.brightnessLevel();
   }
-  mkdir("/data/kiep", 0755);
-  std::ofstream(BRIGHTNESS_FILE) << level;  // /data is the only persistent writable filesystem
+  writeLevel(BRIGHTNESS_FILE, level);
   KLOG("brightness level %d", level);
 }
 void Device::onKnobPress() {
@@ -172,6 +219,8 @@ void Device::renderLoop() {
       tap_.write(f, now);
     }
     if (beeps) sound_.beep(beeps);
+    int64_t preview = previewAtMs_.load();
+    if (preview && now >= preview && previewAtMs_.compare_exchange_strong(preview, 0)) sound_.beep(1);
   }
 }
 

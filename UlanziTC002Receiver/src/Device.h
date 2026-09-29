@@ -26,8 +26,9 @@ class Device {
   void onTextChunk(uint16_t offset, const uint8_t* value, size_t len);
   void onAttention(const uint8_t* value, size_t len);
   // input thread
-  void onKnob(int delta);  // +1 clockwise, -1 counter-clockwise
-  void onKnobPress();
+  void onKnob(int delta);        // +1 clockwise, -1 counter-clockwise: volume, with the sound as feedback
+  void onBrightness(int delta);  // right button +1, left button -1
+  void onKnobPress();            // replay the last message
   // battery thread
   void setBatteryLow(bool low);
 
@@ -45,6 +46,8 @@ class Device {
   FrameTap tap_;
   Sound sound_;
   Input input_;
+  int volume_ = 6;
+  std::atomic<int64_t> previewAtMs_{0};  // when to play the volume preview; 0 = none pending
   std::thread render_;
   std::atomic<bool> running_{false};
 };

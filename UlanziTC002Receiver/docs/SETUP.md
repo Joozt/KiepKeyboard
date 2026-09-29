@@ -125,10 +125,12 @@ to restore.
 
 ## 7. Knob, buttons, battery
 
-- Knob rotate: brightness in 5 levels (evdev `/dev/input/event68`, ABS pairs 8→1 clockwise, 13→11
-  counter-clockwise). Level persists in `/data/kiep/brightness`; `adb shell cat /data/kiep/brightness`.
-- Knob press (`/dev/input/event67`, key 0x67): replays the last message from the start (`replay` in logcat).
-  Left/middle/right buttons (0x6C/0x69/0x6A) are unused.
+- Knob rotate: notification volume 0–6 (0 = silent), evdev `/dev/input/event68`, ABS pairs 8→1 clockwise,
+  13→11 counter-clockwise. The sound plays once at the new level ~300 ms after the knob rests. Persists in
+  `/data/kiep/volume`.
+- Left / right buttons (`/dev/input/event67`, keys 0x6C / 0x6A): brightness down / up in 5 levels, persisted
+  in `/data/kiep/brightness`. Middle button (0x69) unused.
+- Knob press (key 0x67): replays the last message from the start (`replay` in logcat).
 - Battery: polled every 30 s over the MCU UART (`/dev/ttyS1`, 1.5 Mbaud); logcat shows `mcu version V1.0.17`
   at start. Below 15 % the heartbeat pixel turns red. The MCU reports no charging flag.
 
