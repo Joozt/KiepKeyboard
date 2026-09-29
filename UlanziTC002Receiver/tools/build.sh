@@ -12,12 +12,12 @@ case "$1" in
   --release)
     cmake --preset z21-release >/dev/null
     cmake --build --preset z21-release
-    rm -rf out/device && mkdir -p out && cp -r build/z21-release/device out/device
+    mkdir -p out/device && cp -r build/z21-release/device/. out/device/   # copy over: out/ is Dropbox-synced, rm -rf fails
     ;;
   *)
     cmake --preset z21 >/dev/null
     cmake --build --preset z21
-    rm -rf out/device && mkdir -p out && cp -r build/z21/device out/device
+    mkdir -p out/device && cp -r build/z21/device/. out/device/
     ;;
 esac
 if [ -f out/device/lib/libzkgui.so ]; then
