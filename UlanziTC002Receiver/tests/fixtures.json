@@ -1,0 +1,16 @@
+[
+ {"name": "m_fits",        "send": ["M Hoi"],                                   "wait_ms": 500,  "expect": {"lit_cols_min": [8, 30], "motion": false, "golden": true}},
+ {"name": "m_scrolls",     "send": ["M Hallo allemaal, hoe gaat het"],          "wait_ms": 1500, "expect": {"motion": true, "interval": [27, 33, 45]}},
+ {"name": "m_tail_hold",   "send": ["M Hallo allemaal"],                        "wait_ms": 6500, "expect": {"motion": false, "lit_cols_max": [48, 50], "golden": true}},
+ {"name": "w_extension",   "send": ["M Hallo", "W Hallo allemaal", "W Hallo allemaal hier"], "gap_ms": 300, "wait_ms": 1000, "expect": {"motion": true}},
+ {"name": "l_left",        "send": ["L ab"],                                    "wait_ms": 300,  "expect": {"lit_cols_min": [0, 2], "motion": false, "golden": true}},
+ {"name": "l_tail",        "send": ["L abcdefghijklmnopqrstuvw"],               "wait_ms": 300,  "expect": {"lit_cols_max": [48, 50], "motion": false}},
+ {"name": "newline_space", "send": ["L a\\nb"],                                 "wait_ms": 300,  "expect": {"golden": true}},
+ {"name": "accents",       "send": ["L éëïöü"],                                 "wait_ms": 300,  "expect": {"golden": true}},
+ {"name": "m_long_write",  "send": ["M <300 chars>"],                           "wait_ms": 2000, "expect": {"motion": true}},
+ {"name": "attention",     "send": ["M Hoi", "attention 2"],                    "gap_ms": 500, "wait_ms": 100, "expect": {"color": "white"}},
+ {"name": "yes",           "send": ["yes"],                                     "wait_ms": 200,  "expect": {"color": "green"}},
+ {"name": "no",            "send": ["no"],                                      "wait_ms": 200,  "expect": {"color": "red"}},
+ {"name": "idle_clear",    "send": ["M Hoi"], "idle_ms": 3000,                  "wait_ms": 4500, "expect": {"color": "dark"}},
+ {"name": "disconnect_clear", "send": ["M Hoi"], "disconnect": true,            "wait_ms": 3000, "expect": {"color": "dark"}}
+]
