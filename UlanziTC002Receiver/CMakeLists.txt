@@ -24,11 +24,15 @@ if(KIEP_DEVICE)
     src/Sound.cpp src/BtBringup.cpp src/KiepGatt.c src/FrameTap.cpp)
   set_target_properties(zkgui PROPERTIES PREFIX "lib" OUTPUT_NAME "zkgui")
   target_include_directories(zkgui PRIVATE ${SDK_INCLUDE_DIRS} ${KIEP_SDK}/bluez/include ${KIEP_SDK}/bluez/include/ble)
-  target_link_libraries(zkgui PRIVATE presenter ${KIEP_SDK}/bluez/lib/libgatt-server.a ${SDK_LIBS} pthread)
+  # Static SDK archives reference each other (audio-utility -> ffmpeg -> z): link them as one group so
+  # order does not matter. -z defs turns any leftover undefined symbol into a build error instead of a
+  # silent dlopen failure on the device (which falls back to the stock app).
+  target_link_libraries(zkgui PRIVATE presenter ${KIEP_SDK}/bluez/lib/libgatt-server.a
+    -Wl,--start-group ${SDK_LIBS} -Wl,--end-group pthread dl m)
   target_compile_definitions(zkgui PRIVATE
     $<$<BOOL:${KIEP_FRAME_TAP}>:KIEP_FRAME_TAP=1>
     $<$<BOOL:${KIEP_SOUND}>:KIEP_SOUND=1>)
-  target_link_options(zkgui PRIVATE -Wl,-z,now -Wl,-z,relro -Wl,--as-needed)
+  target_link_options(zkgui PRIVATE -Wl,-z,now -Wl,-z,relro -Wl,--as-needed -Wl,-z,defs)
   add_custom_command(TARGET zkgui POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/device/lib ${CMAKE_BINARY_DIR}/device/ui
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:zkgui> ${CMAKE_BINARY_DIR}/device/lib/libzkgui.so
