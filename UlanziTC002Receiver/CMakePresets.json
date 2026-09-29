@@ -1,0 +1,29 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "z21",
+      "binaryDir": "build/z21",
+      "generator": "Ninja",
+      "toolchainFile": "cmake/toolchain-z21.cmake",
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug", "KIEP_FRAME_TAP": "ON"}
+    },
+    {
+      "name": "z21-release",
+      "inherits": "z21",
+      "binaryDir": "build/z21-release",
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "KIEP_FRAME_TAP": "OFF"}
+    },
+    {
+      "name": "host",
+      "binaryDir": "build/host",
+      "generator": "Ninja",
+      "cacheVariables": {"KIEP_DEVICE": "OFF", "CMAKE_BUILD_TYPE": "Debug"}
+    }
+  ],
+  "buildPresets": [
+    {"name": "z21", "configurePreset": "z21"},
+    {"name": "z21-release", "configurePreset": "z21-release"},
+    {"name": "host", "configurePreset": "host"}
+  ]
+}

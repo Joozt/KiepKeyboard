@@ -1,0 +1,33 @@
+# docker compose run --rm build        -> out/device (Debug, frame tap on)
+# docker compose run --rm build --release
+# docker compose run --rm test         -> host presenter tests
+# docker compose run --rm shell -c "…" -> anything else inside the image
+# .cache (SDK) and build/ live in named volumes: they never touch the Dropbox-synced tree.
+services:
+  build:
+    build: .
+    image: kiep-tc002-build
+    volumes:
+      - .:/work
+      - kiep-cache:/work/.cache
+      - kiep-build:/work/build
+    entrypoint: ["sh", "tools/build.sh"]
+  test:
+    image: kiep-tc002-build
+    volumes:
+      - .:/work
+      - kiep-cache:/work/.cache
+      - kiep-build:/work/build
+    entrypoint: ["sh", "tools/build.sh", "--host-tests"]
+  shell:
+    image: kiep-tc002-build
+    volumes:
+      - .:/work
+      - kiep-cache:/work/.cache
+      - kiep-build:/work/build
+    entrypoint: ["bash"]
+    stdin_open: true
+    tty: true
+volumes:
+  kiep-cache: {}
+  kiep-build: {}

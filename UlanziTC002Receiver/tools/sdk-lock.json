@@ -1,0 +1,88 @@
+{
+  "sdk_base": "https://package.flythings.cn/packages/Z21",
+  "packages": [
+    {
+      "name": "easyui",
+      "version": "2.6.0",
+      "sha256": "4a063d606d58f085759dcb451bf14e3b8e03388f2f83bfd511a02df5167555e5"
+    },
+    {
+      "name": "log",
+      "version": "0.0.0",
+      "sha256": "c1eb4ff16a00e82960c8f289958d431fe22024423bca12d9ba8536197a49a12b"
+    },
+    {
+      "name": "base-utility",
+      "version": "10.9.3",
+      "sha256": "4d12c181d679cd3d67e0d35aecfc56f096620285ff70ccc969ed796cc5ed7784"
+    },
+    {
+      "name": "audio-utility",
+      "version": "5.1.1",
+      "sha256": "5acd1a9009bbffa1981f5b4f2956225c25a274bb1f2d93743e4c830e1d046519"
+    },
+    {
+      "name": "base-json",
+      "version": "3.0.3",
+      "sha256": "f203348872ca3e29c425303b621b7ba8d9a9335b07af75612cbe92030f3cc16d"
+    },
+    {
+      "name": "ffmpeg",
+      "version": "4.1.9",
+      "sha256": "6c4f047a7dca2c9449ab2b75d7e1e77df88ccc86f6ed3433a8d494cebbe97047"
+    },
+    {
+      "name": "z",
+      "version": "1.2.11",
+      "sha256": "07cb2fe6e5d83f783d31753228e56833838211ba237a9971a23ee1187cf49194"
+    },
+    {
+      "name": "mi_ao",
+      "version": "0.0.0",
+      "sha256": "4d671609a36ea55dd2c11c5128370b866054496fbdf1a1796069396157dffd76"
+    },
+    {
+      "name": "mi_aio",
+      "version": "0.0.0",
+      "sha256": "f83e35d048df6543a48ada601473a1529ca17e6e52ddd217026e68520172353a"
+    },
+    {
+      "name": "mi_sys",
+      "version": "0.0.0",
+      "sha256": "4b7314381ad17d8128681e639d6b1ac2705fa7b9de4b9552abf9c1e73e46c08a"
+    },
+    {
+      "name": "mi_common",
+      "version": "0.0.0",
+      "sha256": "dc7b93e8e8c40f6598c5a19ad48a2ccc5488135cc19becdf54f84751260a5dd8"
+    },
+    {
+      "name": "cam_os_wrapper",
+      "version": "0.0.0",
+      "sha256": "15b7f10788aa3f074c6b427c0570c50e0bac7dba25c860716dc850c1baada03c"
+    }
+  ],
+  "bluez": {
+    "commit": "677a3aa89784bcb0b3e5ffa6db954efa0ce880de",
+    "base": "https://raw.githubusercontent.com/UlanziTechnology/Ulanzi-U-Clock-TC002/{commit}/Z21_TC002_Demo/src/dependencies",
+    "headers": [
+      "att-types.h",
+      "att.h",
+      "bluetooth.h",
+      "crypto.h",
+      "gatt-db.h",
+      "gatt-helpers.h",
+      "gatt-server.h",
+      "hci.h",
+      "hci_lib.h",
+      "io.h",
+      "l2cap.h",
+      "mainloop.h",
+      "queue.h",
+      "timeout.h",
+      "util.h",
+      "uuid.h"
+    ],
+    "lib_sha256": "4981db0f6d2c2cd7965b31ce15614249bd0734d80fd3ac6ca19d8c18beac4523"
+  }
+}
