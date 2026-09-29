@@ -7,7 +7,7 @@ bundle() {  # $1 = preset. out/ is Dropbox-synced: remove files, never the direc
   cmake --preset "$1" >/dev/null
   cmake --build --preset "$1"
   mkdir -p out/device/lib out/device/ui
-  rm -f out/device/ui/* out/device/lib/*
+  find out/device/ui out/device/lib -mindepth 1 -delete   # dotfiles too
   cp build/"$1"/device/lib/libzkgui.so out/device/lib/
   cp build/"$1"/device/EasyUI.cfg.json out/device/
   cp -r res/ui/. out/device/ui/   # resources come straight from the source tree, never from a stale build dir

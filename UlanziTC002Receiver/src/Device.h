@@ -28,7 +28,7 @@ class Device {
   // input thread
   void onKnob(int delta);        // +1 clockwise, -1 counter-clockwise: volume, with the sound as feedback
   void onBrightness(int delta);  // right button +1, left button -1
-  void onKnobPress();            // replay the last message
+  void onKnobPress();            // knob press or middle button: replay the last message
   // battery thread
   void setBatteryLow(bool low);
 
