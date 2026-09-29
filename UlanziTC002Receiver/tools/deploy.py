@@ -11,6 +11,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEV = ROOT / "out/device"
@@ -36,8 +37,10 @@ def adb(*args, check=True):
 
 
 def restart():
-    # ctl.restart is silently ignored by this init; stop + start works
-    adb("shell", "setprop ctl.stop zkswe; sleep 1; setprop ctl.start zkswe")
+    # ctl.restart is silently ignored by this init; stop + start works. The device busybox has no `sleep`.
+    adb("shell", "setprop ctl.stop zkswe")
+    time.sleep(1)
+    adb("shell", "setprop ctl.start zkswe")
 
 
 def main():

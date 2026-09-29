@@ -10,19 +10,15 @@
 
 namespace kiep {
 
-// Make adb over USB-C available from boot. The otg node takes a role name; the sibling files are
-// actions (see atomicstack DEVICE.md). Writing both is harmless; the spike records which one works.
+// Make adb over USB-C available from boot: the otg node takes the role name (verified on hardware;
+// the sibling "action" files are not writable even as root).
 static void enableUsbAdb() {
-  static const char* paths[] = {"/sys/bus/platform/devices/soc:usbotg/otg_role",
-                                "/sys/bus/platform/devices/soc:usbotg/usb_device"};
-  for (const char* p : paths) {
-    int fd = open(p, O_WRONLY);
-    if (fd < 0) { KLOGW("usb: %s: %s", p, strerror(errno)); continue; }
-    const char* v = strstr(p, "otg_role") ? "usb_device" : "1";
-    ssize_t n = write(fd, v, strlen(v));
-    close(fd);
-    KLOG("usb: wrote '%s' to %s (%zd)", v, p, n);
-  }
+  const char* p = "/sys/bus/platform/devices/soc:usbotg/otg_role";
+  int fd = open(p, O_WRONLY);
+  if (fd < 0) { KLOGW("usb: %s: %s", p, strerror(errno)); return; }
+  ssize_t n = write(fd, "usb_device", 10);
+  close(fd);
+  KLOG("usb: otg_role <- usb_device (%zd)", n);
 }
 
 Device& Device::instance() { static Device d; return d; }

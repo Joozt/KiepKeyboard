@@ -52,10 +52,14 @@ docker compose run --rm build && python tools/deploy.py --logs
 Expected logcat lines (`adb logcat -v time -s kiep`):
 ```
 KiepDisplay TC002 starting
-usb: wrote 'usb_device' to /sys/bus/platform/devices/soc:usbotg/otg_role (10)
+usb: otg_role <- usb_device (10)
 panel: open
 spike0: pixel sent
 ```
+The loader itself logs `load /tmp/EasyUI.cfg ok!` and `registerActivity name: mainActivity OK!` (tag `zkgui`).
+
+The device shell is a stripped busybox: no `sleep`, `grep`, `head`, `uname`. Filter on the host
+(`adb shell cat … | findstr`), never on the device.
 and one heartbeat-blue pixel top-right on the panel. `adb shell getprop sys.zkapp.state` → `running`.
 
 `python tools/deploy.py --restore` returns to the stock app; so does a power cycle
