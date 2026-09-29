@@ -20,9 +20,9 @@ static const int VOLUME_MAP[7] = {0, 15, 17, 19, 21, 23, 25};
 static bool exists(const std::string& p) { return access(p.c_str(), R_OK) == 0; }
 
 void Sound::init(const std::string& resDir, int level) {
-  // A user-supplied beep.mp3 (any short sound) wins over the generated beep.wav
-  path_ = exists(resDir + "/beep.mp3") ? resDir + "/beep.mp3" : resDir + "/beep.wav";
+  path_ = resDir + "/beep.mp3";  // res/ui/beep.mp3: the notification sound, any short clip the SDK player decodes
 #ifdef KIEP_SOUND
+  if (!exists(path_)) { KLOGW("sound: %s missing, attention stays silent", path_.c_str()); return; }
   ready_ = true;
   setLevel(level);
   KLOG("sound: ready (%s)", path_.c_str());
