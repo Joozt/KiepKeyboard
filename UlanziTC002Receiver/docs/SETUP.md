@@ -96,7 +96,34 @@ Known controller quirk: right after `hciattach`, the AIC controller sometimes an
 Advertising Data with a Hardware Error event; the app checks the status and retries (`gatt: LE cmd …
 attempt N failed`). Persistent failures mean advertising without our payload: power cycle.
 
-## 6. Permanent install
+## 6. Seeing the screen (frame tap)
+
+Debug builds (`docker compose run --rm build`, the default) write every frame handed to the panel into
+a 64-frame ring at `/tmp/kiep/frames.bin` — the last software point before SPI; the panel cannot be
+read back. Release builds have no tap.
+
+```bash
+python tools/screen.py                       # ASCII art of the newest frame + cadence stats
+python tools/screen.py --png out/screen.png  # LED-look PNG (open it, or let an agent read it)
+python tools/screen.py --gif out/motion.gif --window 2500   # the last 2.5 s as an animation
+python tools/screen.py --stats --window 1500 # frame intervals over the last 1.5 s
+```
+Keep `out/*.png` / `out/*.gif` for screenshots; `out/` is gitignored.
+
+**The receiver clears on disconnect** (protocol rule), and `send.py` disconnects right after its last
+frame. To look at a result, hold the connection: `python tools/send.py M "Hallo" --hold 10 &` then
+run `screen.py` while it holds. In `shell` mode `--gap` spaces the frames.
+
+**Smoothness check.** While a long message scrolls with the connection held:
+`python tools/screen.py --stats --window 1500` → `interval mean=30.0ms stdev=0.0ms max=30ms >45ms=0`
+(measured 2026-09-29). Anything else means the render thread lost its cadence: check
+`adb logcat -s kiep` for `render: could not raise priority`.
+
+**Debug knobs** (Debug builds, read at app start, restart with `deploy.py` after changing):
+`adb shell "echo 3000 > /tmp/kiep/idle_ms"` shortens the 10-minute idle clear to 3 s; delete the file
+to restore.
+
+## 7. Permanent install
 
 Decided on hardware (2026-09-29): the loader (`/bin/zkgui` + `/lib/libzkupgrade.so`) reads only
 `/tmp/EasyUI.cfg` (RAM, written by `zkdaemon` as `{}` after boot failures) or `/res/etc/EasyUI.cfg`

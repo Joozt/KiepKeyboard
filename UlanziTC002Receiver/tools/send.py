@@ -41,24 +41,35 @@ async def find(timeout=15):
     return dev
 
 
-async def send_all(lines):
+async def send_all(lines, hold=0.0, gap=0.3):
+    """Send frames on one connection; `hold` seconds afterwards keep it open (the receiver clears on disconnect)."""
     async with BleakClient(await find()) as client:
-        for line in lines:
+        for i, line in enumerate(lines):
+            if i:
+                await asyncio.sleep(gap)
             cmd, _, arg = line.partition(" ")
             uuid, data = frame(cmd, arg or None)
             await client.write_gatt_char(uuid, data, response=True)
-            print("sent", cmd, len(data), "bytes")
+            print("sent", cmd, len(data), "bytes", flush=True)
+        if hold:
+            await asyncio.sleep(hold)
 
 
 def main():
-    if len(sys.argv) < 2:
-        raise SystemExit(__doc__)
-    if sys.argv[1] == "shell":
+    args = sys.argv[1:]
+    hold, gap = 0.0, 0.3
+    if "--hold" in args:
+        i = args.index("--hold"); hold = float(args[i + 1]); del args[i:i + 2]
+    if "--gap" in args:
+        i = args.index("--gap"); gap = float(args[i + 1]); del args[i:i + 2]
+    if not args:
+        raise SystemExit(__doc__ + "\n  --hold SECONDS  keep the connection open after the last frame\n  --gap SECONDS   pause between frames in shell mode (default 0.3)")
+    if args[0] == "shell":
         print("one frame per line, e.g. `M Hallo`; ctrl-Z then Enter (Windows) / ctrl-D to quit")
         lines = [l.rstrip("\n") for l in sys.stdin if l.strip()]
     else:
-        lines = [" ".join(sys.argv[1:])]
-    asyncio.run(send_all(lines))
+        lines = [" ".join(args)]
+    asyncio.run(send_all(lines, hold, gap))
 
 
 if __name__ == "__main__":
