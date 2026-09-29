@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(KiepTC002 CXX C)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # presenter is linked into the shared libzkgui.so
 set(KIEP_SDK ${CMAKE_SOURCE_DIR}/.cache/sdk)
 option(KIEP_DEVICE "Build the device library (cross)" ON)
 option(KIEP_FRAME_TAP "Write frames to /tmp/kiep/frames.bin" OFF)
@@ -27,7 +28,7 @@ if(KIEP_DEVICE)
   target_compile_definitions(zkgui PRIVATE
     $<$<BOOL:${KIEP_FRAME_TAP}>:KIEP_FRAME_TAP=1>
     $<$<BOOL:${KIEP_SOUND}>:KIEP_SOUND=1>)
-  target_link_options(zkgui PRIVATE -Wl,-z,now -Wl,-z,relro)
+  target_link_options(zkgui PRIVATE -Wl,-z,now -Wl,-z,relro -Wl,--as-needed)
   add_custom_command(TARGET zkgui POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/device/lib ${CMAKE_BINARY_DIR}/device/ui
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:zkgui> ${CMAKE_BINARY_DIR}/device/lib/libzkgui.so

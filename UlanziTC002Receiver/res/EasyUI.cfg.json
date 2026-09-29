@@ -1,0 +1,4 @@
+{"baud": "115200", "defBrightness": -1, "languageCode": "en_US", "languagePath": "@ROOT@/tr/",
+ "resPath": "@ROOT@/ui/", "rotateScreen": 0, "rotateTouch": 0, "screensaverTimeOut": -1,
+ "startupLibPath": "@ROOT@/lib/libzkgui.so", "startupTouchCalib": false,
+ "touchDev": "/dev/input/event1", "uart": "ttyS1", "zkdebug": false}

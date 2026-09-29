@@ -21,6 +21,7 @@ case "$1" in
     ;;
 esac
 if [ -f out/device/lib/libzkgui.so ]; then
+  [ -f out/device/ui/main.ftu ] || cp .cache/sdk/demo-ui/main.ftu out/device/ui/main.ftu
   arm-linux-gnueabihf-strip --strip-unneeded out/device/lib/libzkgui.so
   echo "bundle: out/device"
 fi
