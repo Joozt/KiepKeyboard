@@ -179,7 +179,7 @@ def flash(image: pathlib.Path):
     info = inspect_update_img(image.read_bytes())
     if not (info["crc_ok"] and info["md5_ok"] and info["squashfs"] and info["device_code"] == hex(DEVICE_CODE)):
         sys.exit(f"refusing to flash: {info}")
-    print("staging", image, "on /data …")
+    print("staging", image, "on /data ...")
     adb("push", str(image), "/data/update.img", capture=True)
     sh("setprop persist.zkupgrade.dir /data")
     sh("setprop sys.zkupgrade.dir /data")

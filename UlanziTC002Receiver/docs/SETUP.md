@@ -155,15 +155,36 @@ the frame tap, and checks lit columns, dominant color, motion, cadence and golde
 land in `out/fail_<name>.png`. A new feature gets a new fixture (schema in the script's docstring);
 `idle_ms` fixtures restart the app twice and take ~30 s.
 
-## 10. Permanent install
+## 10. Permanent install, uninstall, recovery
 
-Decided on hardware (2026-09-29): the loader (`/bin/zkgui` + `/lib/libzkupgrade.so`) reads only
-`/tmp/EasyUI.cfg` (RAM, written by `zkdaemon` as `{}` after boot failures) or `/res/etc/EasyUI.cfg`
-(read-only squashfs). Nothing under `/data` or `/mnt/storage` is consulted, so a permanent install
-rebuilds the `res` partition image and flashes it with the vendor upgrade path
-(`sys.zkupgrade.dir` + `sys.zkupgrade.flag`). Tooling: `tools/install.py` (backup, build-image,
-flash, uninstall); procedure in section 8 once implemented. The vendor's own `update.img` sits in
-`/mnt/storage` and serves as the header template.
+Why an image: the loader (`/bin/zkgui` + `/lib/libzkupgrade.so`) reads only `/tmp/EasyUI.cfg` (RAM) or
+`/res/etc/EasyUI.cfg` (read-only squashfs); nothing under `/data` or `/mnt/storage` is consulted. So the
+install rebuilds the `res` partition image with our app **added** (stock app files stay) and the config
+pointing at `/res/lib/libkiep.so` + `/res/ui/kiep/`, then flashes it through the vendor upgrade path.
+
+```bash
+python tools/install.py backup              # once: all 8 mtd partitions + vendor update.img -> out/backup/<stamp>/
+python tests/test_update_img.py             # packer round trip against the vendor image (byte-identical)
+docker compose run --rm build               # the bundle to install (Debug keeps the frame tap; --release drops it)
+python tools/install.py build-image         # -> out/update.img (runs unsquashfs/mksquashfs in the container)
+python tools/install.py flash out/update.img
+```
+Expected: `crc_ok`/`md5_ok`/`squashfs` true, `device_code 0xaa550606`; after `flash` the device shows the
+upgrade screen, writes ~20 s, reboots (~75 s total) into KiepDisplay. USB adb comes back by itself
+(the app sets the otg role at boot). Check: `adb shell ls /res/lib` lists `libkiep.so`;
+`adb shell cat /proc/uptime` is small; logcat shows `sound: ready (/res/ui/kiep/beep.mp3)`.
+Then `adb shell rm /data/update.img`. Installed 2026-09-29; `verify.py --no-deploy` passed 14/14 on it.
+
+Updating = build + `build-image` + `flash` again. The `/tmp` dev loop (`deploy.py`) still works on top of an
+installed device and a power cycle returns to the installed version.
+
+**Uninstall:** `python tools/install.py uninstall` packs the backed-up stock `res` (`mtd3.bin`) into an
+update image and flashes it. **Recovery without adb:** hold the reset button next to USB-C while powering
+on: the stock recovery reflashes from `/mnt/storage/update.img` (an older vendor release) and wipes
+`/data` (brightness/volume settings). Three consecutive app crashes make `zkdaemon` write `{}` to
+`/tmp/EasyUI.cfg`, which loads the stock `libzkgui.so` for that boot.
+
+Never interrupt power during the ~20 s write: the `res` partition has no second copy.
 
 ## 7. Troubleshooting
 
