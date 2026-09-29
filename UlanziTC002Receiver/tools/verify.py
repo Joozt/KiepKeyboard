@@ -10,8 +10,10 @@ Fixture fields: name, send (frames as `send.py` lines; "M <300 chars>" expands t
 gap_ms (pause between frames), wait_ms (before capturing), idle_ms (debug idle override, restarts the app),
 disconnect (capture after the connection dropped), expect:
   lit_cols_min/lit_cols_max [lo, hi]  leftmost/rightmost lit column of the last frame (heartbeat excluded)
-  color white|green|red|dark          dominant color of the last frame
-  motion true|false                   >= 5 distinct frames in the last second, or <= 2
+  color white|green|red|dark|text     dominant color of the last frame
+  frames_include white|green|red      some frame in the last 1.5 s had that color (for brief flashes)
+  motion true|false                   >= 5 distinct frames in the last second, or fewer
+  no_reentry MS                       within the last MS, once text is on screen nothing re-enters from the right
   interval [mean_lo, mean_hi, max]    frame intervals (ms) over the last second
   golden true                         last frame equals tests/golden/<name>.png (lit mask, heartbeat cleared)
 Adding a feature = adding a fixture (and a golden with --update, reviewed by eye).
@@ -82,7 +84,9 @@ def golden_check(name, rgb, update):
 
 def expand(line):
     if "<300 chars>" in line:
-        return "M " + ("Lange zin " * 30)
+        # 300 bytes = two ATT chunks at MTU 247. The marker sits at the very end: a receiver that rendered
+        # only the first chunk would show filler, the live tail view shows "…xEINDE" only when all arrived.
+        return line.split("<")[0] + "x" * 295 + "EINDE"
     return line.replace("\\n", "\n")
 
 
@@ -128,6 +132,16 @@ async def run_fixture(fx, update):
         moving = distinct >= 5
         if moving != e["motion"]:
             fails.append(f"motion distinct={distinct}")
+    if "frames_include" in e:  # a flash is brief: look for it in the recent frames instead of sampling one instant
+        kinds = {color(f[1]) for f in frames if f[0] >= now_ms - 1500}
+        if e["frames_include"] not in kinds:
+            fails.append(f"no {e['frames_include']} frame in the last 1.5 s (saw {sorted(kinds)})")
+    if "no_reentry" in e:  # W extensions must not restart the scroll: once text is on screen, nothing re-enters from the right
+        recent = [f for f in frames if f[0] >= now_ms - e["no_reentry"]]
+        mins = [lit_cols(f[1])[0] for f in recent]
+        started = [i for i, m in enumerate(mins) if 0 <= m < 30]
+        if started and any(m > 45 for m in mins[started[0]:]):
+            fails.append("scroll restarted (text re-entered from the right)")
     if "interval" in e and len(last_s) > 2:
         d = [last_s[i + 1][0] - last_s[i][0] for i in range(len(last_s) - 1)]
         mean = sum(d) / len(d)

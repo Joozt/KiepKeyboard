@@ -43,6 +43,8 @@ static struct bt_att* g_att;
 static struct bt_gatt_server* g_server;
 static pthread_t g_thread;
 static int g_running;
+static int g_advertising;     /* last enable command succeeded */
+static int g_retry_timer = -1; /* periodic: re-enable advertising when idle and not advertising */
 
 /* LE controller command with status check and retries: right after hciattach the AIC controller was
  * seen answering LE Set Advertising Data with a Hardware Error event instead of Command Complete. */
@@ -90,7 +92,15 @@ static void advertise(int on) {
   memset(&en, 0, sizeof en);
   en.enable = on ? 0x01 : 0x00;
   int r = le_cmd(OCF_LE_SET_ADVERTISE_ENABLE, &en, LE_SET_ADVERTISE_ENABLE_CP_SIZE);
-  LOG("gatt: advertising %s (%s)", on ? "on" : "off", r == 0 ? "ok" : "FAILED");
+  g_advertising = on && r == 0;
+  LOG("gatt: advertising %s (%s)", on ? "on" : "off", r == 0 ? "ok" : "FAILED, retrying in 5 s");
+}
+
+/* A failed (re)start would otherwise strand the device with a blinking heartbeat until power cycle. */
+static void retry_advertise(int id, void* u) {
+  (void)u;
+  if (!g_att && !g_advertising) advertise(1);
+  mainloop_modify_timeout(id, 5000);
 }
 
 static void on_text_write(struct gatt_db_attribute* a, unsigned int id, uint16_t off, const uint8_t* v,
@@ -174,6 +184,7 @@ static void* thread_main(void* arg) {
   if (g_listen < 0) { LOG("gatt: l2cap listen failed: %s", strerror(errno)); return NULL; }
   mainloop_add_fd(g_listen, EPOLLIN, on_accept, NULL, NULL);
   advertise(1);
+  g_retry_timer = mainloop_add_timeout(5000, retry_advertise, NULL, NULL);
   mainloop_run();
   return NULL;
 }

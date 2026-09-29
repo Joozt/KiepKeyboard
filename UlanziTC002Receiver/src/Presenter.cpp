@@ -86,7 +86,9 @@ void Presenter::layout(bool extension) {
   if (overflow) { scrolling_ = true; x_ = W; } else { scrolling_ = false; x_ = (W - width_) / 2; }
 }
 
-void Presenter::clearText() { text_.clear(); cps_.clear(); width_ = 0; scrolling_ = false; }
+// A clear (disconnect, idle) is a privacy event: it also forgets the replay buffer, like the TC001, so the
+// knob cannot bring a cleared message back.
+void Presenter::clearText() { text_.clear(); lastMessage_.clear(); cps_.clear(); width_ = 0; scrolling_ = false; }
 
 void Presenter::onAttention(uint8_t effect, uint8_t count, int64_t now) {
   flash_ = effect == 1 ? ATTENTION : effect == 2 ? YES : effect == 3 ? NO : NONE;

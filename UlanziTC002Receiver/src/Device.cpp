@@ -201,6 +201,11 @@ void Device::renderLoop() {
     while (next.tv_nsec >= 1000000000L) { next.tv_nsec -= 1000000000L; next.tv_sec++; }
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, nullptr);
     int64_t now = nowMs();
+    int64_t deadline = int64_t(next.tv_sec) * 1000 + next.tv_nsec / 1000000;
+    if (now - deadline > TICK_MS) {  // stalled: drop the missed ticks instead of replaying them back to back
+      clock_gettime(CLOCK_MONOTONIC, &next);  // (the panel needs >= 15 ms between frames)
+      KLOGW("render: %lld ms late, resyncing", (long long)(now - deadline));
+    }
     bool changed;
     int beeps;
     {

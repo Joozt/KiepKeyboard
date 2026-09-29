@@ -40,27 +40,34 @@ Stock firmware exposes adb only over Wi-Fi. This is a development step; the prod
 5. Plug in USB-C. `adb devices` → a device with USB id `18d1:d002`. From now on use USB.
 6. In Ulanzi Studio: remove the device / forget the network. Our firmware never brings Wi-Fi up.
 
-**USB gadget note:** after every *reboot* the port flips to host mode ~3.5 s into boot and a plugged
-cable does not re-enumerate. Replug the cable after a reboot. A `ctl.stop/ctl.start zkswe` restart
-(what `deploy.py` does) is not a reboot.
+**USB gadget note:** the kernel flips the port to host mode ~3.5 s into boot; our app switches it back
+to device mode when it starts, so adb normally reappears by itself after a reboot. If `adb devices` stays
+empty, replug the cable. A `ctl.stop/ctl.start zkswe` restart (what `deploy.py` does) is not a reboot.
 
 ## 4. Dev loop
 
 ```bash
 docker compose run --rm build && python tools/deploy.py --logs
 ```
-Expected logcat lines (`adb logcat -v time -s kiep`):
+Expected logcat lines (`adb logcat -v time -s kiep`), then one blinking heartbeat-blue pixel top-right:
 ```
 KiepDisplay TC002 starting
 usb: otg_role <- usb_device (10)
 panel: open
-spike0: pixel sent
+frame tap on
+sound: ready (/tmp/kiep/ui/beep.mp3)
+brightness level 4, volume level 6
+mcu version V1.0.17
+bt: hci0 up
+gatt: advertising on (ok)
 ```
-The loader itself logs `load /tmp/EasyUI.cfg ok!` and `registerActivity name: mainActivity OK!` (tag `zkgui`).
+The loader itself logs `load /tmp/EasyUI.cfg ok!` and `registerActivity name: mainActivity OK!`, then two
+harmless errors `open /tmp/kiep/ui/main.ftu fail!` / `not found mainActivity Activity` (tag `zkgui`; we
+ship no UI resource, the LED panel bypasses the LCD pipeline). `adb shell getprop sys.zkapp.state` → `running`.
 
 The device shell is a stripped busybox: no `sleep`, `grep`, `head`, `uname`. Filter on the host
-(`adb shell cat … | findstr`), never on the device.
-and one heartbeat-blue pixel top-right on the panel. `adb shell getprop sys.zkapp.state` → `running`.
+(`adb shell cat … | findstr`), never on the device. In Git Bash prefix adb calls with
+`MSYS_NO_PATHCONV=1`, or `/res/bin/…` arguments get rewritten to Windows paths.
 
 `python tools/deploy.py --restore` returns to the stock app; so does a power cycle
 (the override lives in `/tmp`, which is RAM).
@@ -119,7 +126,7 @@ run `screen.py` while it holds. In `shell` mode `--gap` spaces the frames.
 (measured 2026-09-29). Anything else means the render thread lost its cadence: check
 `adb logcat -s kiep` for `render: could not raise priority`.
 
-**Debug knobs** (Debug builds, read at app start, restart with `deploy.py` after changing):
+**Debug knobs** (read at app start in every build; restart with `deploy.py` after changing):
 `adb shell "echo 3000 > /tmp/kiep/idle_ms"` shortens the 10-minute idle clear to 3 s; delete the file
 to restore.
 
@@ -188,12 +195,14 @@ on: the stock recovery reflashes from `/mnt/storage/update.img` (an older vendor
 
 Never interrupt power during the ~20 s write: the `res` partition has no second copy.
 
-## 7. Troubleshooting
+## 11. Troubleshooting
 
 | Symptom | Cause / fix |
 | --- | --- |
 | `adb: no devices` over USB | Cable plugged before/during a reboot: replug. Or the app did not start: use Wi-Fi adb once more. |
 | `panel: open /dev/spidev0.0 failed` | Stock app still holds the panel: `adb shell ps` shows two `zkgui`? Power cycle, deploy again. |
 | Stock clock comes back after deploy | Our library crashed before/at start (three crashes revert to stock config). Read `adb logcat -d \| grep -i -E "kiep\|zkgui\|dlopen"`. |
-| `dlopen … undefined symbol` | SDK ABI mismatch between the Docker toolchain and the device libraries; see the fallbacks in the design proposal §4. |
+| `dlopen … undefined symbol` | A static SDK archive was missing from the link group: the build now fails on this (`-z defs`). If it still happens, compare `adb shell ls /lib` with the `NEEDED` list of `libzkgui.so`. |
+| `bt: no hci0 -- running without Bluetooth` | Modules or `hciattach` failed: `adb shell cat /proc/modules` must list `aic8800_bsp` and `aic8800_fdrv`, `adb shell getprop init.svc.hciattach` → `running`, `/dev/ttyS3` present. Power cycle; the app also retries advertising every 5 s once `hci0` exists. |
+| Heartbeat blinks but the laptop/app never finds `KiepDisplay` | Another central is connected (heartbeat would be solid) or advertising failed: `adb logcat -s kiep` shows `gatt: LE cmd … failed` / `advertising on (FAILED, retrying in 5 s)`. |
 | Panel dark, heartbeat absent, `getprop sys.zkapp.state` ≠ `running` | Watchdog fallback; same as above. |

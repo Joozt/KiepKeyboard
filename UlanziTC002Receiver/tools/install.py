@@ -107,11 +107,17 @@ def squashfs_used(sqsh: bytes) -> int:
 
 # --- commands -----------------------------------------------------------------------------------------
 
-def latest_backup() -> pathlib.Path:
-    dirs = sorted(p for p in BACKUPS.iterdir() if p.is_dir()) if BACKUPS.exists() else []
+def latest_stock_backup(root: pathlib.Path = BACKUPS) -> pathlib.Path:
+    """Newest backup whose `res` dump is the STOCK partition. A backup taken after install contains our
+    firmware; using it as a base or as the uninstall image would silently keep KiepDisplay in place."""
+    dirs = sorted(p for p in root.iterdir() if p.is_dir()) if root.exists() else []
     if not dirs:
         sys.exit("no backup in out/backup: run `install.py backup` first")
-    return dirs[-1]
+    for d in reversed(dirs):
+        mtd3 = d / "mtd3.bin"
+        if mtd3.exists() and b"libkiep.so" not in mtd3.read_bytes():
+            return d
+    sys.exit("every backup in out/backup already contains libkiep.so; no stock image to restore")
 
 
 def cmd_backup(a):
@@ -138,7 +144,8 @@ def cmd_build_image(a):
         subprocess.run(["docker", "compose", "run", "--rm", "shell", "-c",
                         "python3 tools/install.py " + " ".join(args)], cwd=ROOT, check=True)
         return
-    backup = latest_backup()
+    backup = latest_stock_backup()
+    print("stock res base:", backup)
     bundle = ROOT / "out/device"
     if not (bundle / "lib/libzkgui.so").exists():
         sys.exit("no bundle in out/device: run tools/build.sh first")
@@ -197,7 +204,7 @@ def cmd_flash(a):
 
 
 def cmd_uninstall(a):
-    backup = latest_backup()
+    backup = latest_stock_backup()
     raw = (backup / "mtd3.bin").read_bytes()
     sqsh = raw[:squashfs_used(raw)]
     template_path = backup / "vendor-update.img"

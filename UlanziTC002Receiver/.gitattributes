@@ -1,5 +1,6 @@
 # Everything here is consumed inside a Linux container: keep LF even on Windows checkouts.
 * text=auto eol=lf
 *.wav binary
+*.mp3 binary
 *.ftu binary
 *.png binary

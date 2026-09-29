@@ -118,6 +118,13 @@ int main() {
     Presenter p; Frame f; int64_t t = 0; p.onConnected(true, t); p.onText('M', "Hallo allemaal", t); run(p, f, t, 500);
     assert(!p.scrolling()); p.replay(t); assert(p.scrolling() && p.scrollX() == W);
   }
+  {  // privacy: a cleared message cannot be replayed -- neither after disconnect nor after the idle clear
+    Presenter p; Frame f; int64_t t = 0; p.onConnected(true, t); p.onText('M', "Geheim", t); p.tick(t, f);
+    p.onConnected(false, t); p.replay(t); p.tick(t, f); assert(p.text().empty() && litCount(f) == 0);
+    p.onConnected(true, t); p.replay(t); p.tick(t, f); assert(p.text().empty() && litCount(f) == 0);
+    p.setIdleMs(1000); p.onText('M', "Geheim", t); run(p, f, t, 40); assert(p.text().empty());
+    p.replay(t); p.tick(t, f); assert(p.text().empty() && litCount(f) == 0);
+  }
   std::puts("presenter_test: all passed");
   return 0;
 }
