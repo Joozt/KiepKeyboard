@@ -65,7 +65,38 @@ and one heartbeat-blue pixel top-right on the panel. `adb shell getprop sys.zkap
 `python tools/deploy.py --restore` returns to the stock app; so does a power cycle
 (the override lives in `/tmp`, which is RAM).
 
-## 5. Troubleshooting
+## 5. Bluetooth check (laptop as the keyboard)
+
+The app brings Bluetooth up itself, with **no Wi-Fi network**: it sets `persist.wifi.on=0`, stops
+`wpa_supplicant`, loads `aic8800_bsp.ko` + `aic8800_fdrv.ko` (the combo chip's Bluetooth firmware rides
+on these; `bsp` alone gives no `hci0`), starts the stock `hciattach` service (`/res/bin/hciattach -n
+ttyS3 aic`), brings `hci0` up and forces `wlan0` down. Expected logcat lines:
+```
+bt: hci0 up
+bt: `ifconfig wlan0 down` -> 0
+gatt: advertising on (ok)
+```
+Verify there is no network: `adb shell ifconfig wlan0` shows no `UP` flag and no `inet addr`;
+`adb shell ps` lists no `wpa_supplicant`; `adb shell getprop persist.wifi.on` prints `0`.
+
+Send frames from the laptop (Bluetooth on, `pip install -r tools/requirements.txt` done):
+```bash
+python tools/send.py M "Hallo allemaal"     # message
+python tools/send.py L "typing"             # live buffer
+python tools/send.py W "Hallo allemaal"     # word-append
+python tools/send.py attention 2            # white flash + beep, twice
+python tools/send.py yes                    # green flash;  `no` = red
+python tools/send.py shell                  # several frames on one connection, one per line
+```
+Expected: `found CC:C4:B2:xx:xx:xx KiepDisplay`, `sent M 15 bytes`; logcat shows `gatt: connected`,
+the frame, `gatt: disconnected`, `gatt: advertising on (ok)`. The BLE address is the device's public
+(static) address, so the KiepKeyboard app's stored-address connect path applies.
+
+Known controller quirk: right after `hciattach`, the AIC controller sometimes answers LE Set
+Advertising Data with a Hardware Error event; the app checks the status and retries (`gatt: LE cmd …
+attempt N failed`). Persistent failures mean advertising without our payload: power cycle.
+
+## 6. Troubleshooting
 
 | Symptom | Cause / fix |
 | --- | --- |
